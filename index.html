@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KZ21GJFQBD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-KZ21GJFQBD');
+  </script>
+  
+  <script type="text/javascript" id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+  <meta charset="utf-8" />
+
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Desmos Regression Trainer</title>
+
+<script src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=4435f284d2154cf48e80abbbffc842cd"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    margin: 20px;
+    background: #f5f7fa;
+    color: #333;
+  }
+
+  h1, h2, h3 {
+    color: #007bff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  hr {
+      border: 0;
+      height: 1px;
+      background: #ddd;
+      margin: 30px 0;
+  }
+
+  #main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+  }
+  
+  #trainer-layout {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: center;
+      gap: 0; /* Remove gap */
+      width: 100%;
+  }
+
+  #left-panel, #right-panel {
+      box-sizing: border-box; /* Important for resizable layouts that don't work, probably */
+  }
+
+  #left-panel {
+      min-width: 300px;
+  }
+  
+  #right-panel {
+      min-width: 400px;
+  }
+
+  .panel-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    margin-bottom: 20px;
+  }
+
+  /* Category Selection */
+  #category-header {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none; /* Prevents text selection on click (totally works) */
+  }
+  #category-toggle-btn {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #007bff;
+  }
+  #category-selection {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: left;
+    background: #fdfdfd;
+    margin-top: 10px;
+  }
+
+  #category-selection div {
+      padding: 5px;
+      border-radius: 4px;
+  }
+  
+  #category-selection div:hover {
+      background-color: #f0f0f0;
+  }
+
+  #category-selection label {
+      margin-left: 8px;
+      cursor: pointer;
+  }
+
+  /* Question & Answer Area */
+  #question-box {
+    font-size: 1.4rem;
+    font-weight: 500;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    white-space: pre-wrap  /* This may be changed below depending on the function shown, but this works for most */
+  }
+  
+  #answer-input {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+  }
+
+  #answer-box {
+    font-size: 1.1rem;
+    padding: 10px;
+    width: 250px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    transition: border-color 0.2s;
+  }
+
+  #answer-box:focus {
+      border-color: #007bff;
+      outline: none;
+  }
+
+  #result {
+    font-weight: bold;
+    margin-top: 15px;
+    font-size: 1.618rem; /* I'm so funny */
+    min-height: 25px;
+  }
+
+  /* Tips & Explanation */
+  #tips-list {
+      list-style-type: '💡';
+      padding-left: 25px;
+      text-align: left;
+      margin: 10px 0;
+  }
+  
+  #tips-list li {
+      padding-left: 10px;
+      margin-bottom: 8px;
+  }
+
+
+  /* Controls & Buttons */
+  #controls {
+  padding-top: 20px;
+  text-align: center;
+  }
+
+  #controls button, .category-controls button {
+  padding: 10px 18px;
+  margin: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  transition: 0.2s all ease;
+  background: #007bff;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+
+  #controls button:hover, .category-controls button:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+  }
+
+  /* Popups and Modals */
+  #explanation-modal {
+    display:none;
+    position: fixed;
+    z-index: 1002;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.85);
+    backdrop-filter: blur(5px);
+  }
+
+  #explanation-modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+    padding-top: 50px;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+  .close-btn:hover { color: #bbb; }
+
+  /* Some elements from the uh Speed Trainer */
+  #stopwatch {
+    position: fixed; top: 10px; right: 10px; font-size: 18px; font-weight: bold; background: #fff;
+    padding: 6px 10px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  }
+  #calculator {
+    width: 100%; height: 750px; border: 2px solid #007bff; border-radius: 12px;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.15); background: #fff;
+  }
+
+  #help-button {
+    position: fixed; top: 10px; left: 10px; width: 38px; height: 38px; border-radius: 50%;
+    background: #007bff; color: white; font-weight: bold; font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; z-index: 1001;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  }
+  #help-popup, #times-popup {
+    position: fixed; width: 340px; background: #fff; border: 1px solid #ccc; padding: 16px;
+    display: none; text-align: left; z-index: 1000; border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  #help-popup { top: 56px; left: 10px; }
+  #times-popup { top: 56px; right: 10px; max-height: 440px; overflow:auto; }
+  #times-list li {
+    margin-bottom: 6px; list-style: none; padding-bottom: 4px; border-bottom: 1px solid #eee;
+  }
+  #correct-counter {
+    font-size: 22px; font-weight: 500; background: #e6f0ff; padding: 14px 24px;
+    border-radius: 12px; box-shadow: 4px 4px 12px rgba(0,0,0,0.12); margin-bottom: 8px;
+  }
+
+  #resizer {
+      width: 5px;
+      cursor: col-resize;
+      background-color: #ddd;
+      z-index: 10;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 0 5px;
+  }
+  #resizer::before, #resizer::after {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 4px;
+      background: #aaa;
+      border-radius: 50%;
+      margin: 4px 0;
+  }
+
+</style>
+</head>
+<body>
+
+<div id="main-container">
+    <h1>Desmos Regression Trainer</h1>
+    <p id="correct-counter">✅ Correct: 0</p>
+
+    <div class="panel-card" style="width: 90%; max-width: 1220px;">
+        <div id="category-header">
+            <h2>Select Categories to Practice</h2>
+            <span id="category-toggle-btn">[+]</span>
+        </div>
+        <div id="category-collapsible-content">
+            <div id="category-selection"></div>
+            <div class="category-controls" style="margin-top: 10px;">
+                <button id="select-all">Select All</button>
+                <button id="deselect-all">Deselect All</button>
+            </div>
+        </div>
+    </div>
+
+
+    
+    <div id="trainer-layout">
+        <div id="left-panel">
+            <div class="panel-card">
+                <h3 id="current-category-title">Category Title</h3>
+                <p id="question-box">Select a category and click "New Question" to start!</p>
+                <div id="answer-input">
+                    <input type="text" id="answer-box" placeholder="Enter your answer">
+                    <button id="check-answer">Check</button>
+                </div>
+                <p id="result"></p>
+            </div>
+            <div class="panel-card">
+                <h3>Method and Tips & Tricks</h3>
+                <ul id="tips-list"><li>Select a category to see tips.</li></ul>
+                <button id="show-explanation">Show Solved Example</button>
+                <button id="show-tutorial" data-video-url="">Video Tutorial</button>
+            </div>
+        </div>
+        <div id="resizer"></div>
+        <div id="right-panel">
+            <div id="calculator"></div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <button id="new-question">New Question (Shift+Enter)</button>
+        <button id="start-test" title="Alt+Enter">Start Test</button>
+        <button id="show-times">Past Times</button>
+        <button id="end-test">End Test</button>
+    </div>
+</div>
+
+
+<div id="stopwatch">00:00</div>
+<div id="help-button" title="Info">?</div>
+<div id="explanation-modal">
+    <span class="close-btn" id="close-modal">&times;</span>
+    <img id="explanation-modal-content">
+</div>
+<div id="help-popup">
+    <span class="close-btn" onclick="document.getElementById('help-popup').style.display='none'">✖</span>
+    <h3 style="margin-top:0">Info / Help</h3>
+    <p>1. Select one or more categories to practice</p>
+    <p>2. Click 'New Question' or 'Start Test'</p>
+    <p>3. Solve and type your final answer into the box, then check!</p>
+    <p><strong>Shortcuts</strong>: </p>
+    <p> 'Enter': Check your answer.</p>
+    <p> 'Shift+Enter': Check answer and load the next question if correct.</p>
+    <p> 'Alt+Enter': Start Test.</p>
+    <p>
+        <a href="https://www.desmos.com/graphingshortcuts"
+         target="_blank"
+         rel="noopener noreferrer"
+         title="Desmos graphing shortcuts here!">
+        Desmos graphing shortcuts
+        </a>
+    </p>
+    <p> Have any questions? Email me at desmosspeedtrainer@gmail.com!</p>
+    <p> Credit to AdiarMath, LearnSATMath, and everyone else who provided me with resources and wonderful feedback! </p>
+</div>
+<div id="times-popup">
+    <span class="close-btn" onclick="document.getElementById('times-popup').style.display='none'">✖</span>
+    <h4 style="margin-top:0">Past Test Times</h4>
+    <ul id="times-list"></ul>
+    <p>Average per question (all runs): <span id="avg-time">0</span> s</p>
+    <button id="clear-times">Clear Times</button>
+</div>
+
+<script>
+// ===== Desmos init =====
+const elt = document.getElementById('calculator');
+const calculator = Desmos.GraphingCalculator(elt);
+
+// ===== Helper Functions =====
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function randNonZero(min, max) { let n = 0; while (n === 0) n = randInt(min, max); return n; }
+
+// Generates a random integer from one of two non-contiguous ranges
+function randIntFromTwoRanges(min1, max1, min2, max2) {
+    const pickFirstRange = Math.random() < 0.5;
+
+    if (pickFirstRange) {
+        return randInt(min1, max1);
+    } else {
+        return randInt(min2, max2);
+    }
+}
+
+
+// ===== CATEGORY DATA STRUCTURE =====
+const categories = [
+    {
+    id: 'Linear Properties From Two Points',
+    title: 'Linear Properties from Two Points',
+    tips: [
+        "You can write 'table' or do Ctrl+Alt+T in Desmos instead of clicking '+' then 'table'",
+        "You can go to the next cell by pressing the 'Tab' key",
+        "Use the two points to find the slope, then use one point to find the y-intercept. The x-intercept is found by setting y=0 in the equation.",
+        "The slope will be 'b', the y-intercept is the y-coordinate at which the line intersects the y-axis and the x-intercept is the x-coordinate at which the line intersects the x-axis"
+    ],
+    explanationImage: 'https://i.ibb.co/hxVms1q2/Linear-Properties-from-Two-Points-Example.png',
+    tutorialLink: 'https://youtu.be/2ZhWPeH3kfQ?si=UEWB5sEWq6o_nhTn',
+    questionGenerator: function() {
+        let x1, y1, x2, y2, m, b;
+
+        // Loop until we find a valid set of properties
+        while (true) {
+            // Generate integer slope (m) and y-intercept (b)
+            m = randNonZero(-5, 5);
+            b = randNonZero(-10, 10);
+
+            // Ensure b is divisible by m to get an integer x-intercept
+            if (b % m === 0) {
+                
+                // Generate an x1 value
+                x1 = randNonZero(-10, 10);
+                // Calculate the corresponding y1
+                y1 = m * x1 + b;
+
+                // The second point should be different and non-trivial
+                let tempX2;
+                
+                do {
+                    tempX2 = randNonZero(-10, 10);
+                    // Ensure tempX2 is not x1 and not the x-intercept
+                } while (tempX2 === x1 || tempX2 === -b / m); 
+                
+                x2 = tempX2;
+
+                // Calculate the corresponding y2
+                y2 = m * x2 + b;
+                
+                // We have our points, break the loop
+                break;
+            }
+        }
+
+        // The actual answers
+        const slope = m;
+        const yIntercept = b;
+        const xIntercept = -b / m;
+
+        const questionType = randInt(0, 2);
+        let questionText, answer;
+        
+        if (questionType === 0) {
+            questionText = `A line passes through the points $$(${x1}, ${y1})$$ and $$(${x2}, ${y2})$$ What is the slope of the line?`;
+            answer = slope;
+        } else if (questionType === 1) {
+            questionText = `A line passes through the points $$(${x1}, ${y1})$$ and $$(${x2}, ${y2})$$ What is the y-intercept of the line?`;
+            answer = yIntercept;
+        } else {
+            questionText = `A line passes through the points $$(${x1}, ${y1})$$ and $$(${x2}, ${y2})$$ What is the x-intercept of the line?`;
+            answer = xIntercept;
+        }
+
+        return { questionText, answer };
+        }
+    },
+
+
+    {
+        id: 'Two points Non-linear',
+        title: 'Two Points Non-Linear',
+        tips: [
+            "A linear function f(x) has the form f(x) = mx + b. The y-intercept is b.",
+            "Plot the points, then run a regression, replacing f(x) with mx+b",
+            "You can write 'table' or do Ctrl+Alt+T in Desmos instead of clicking '+' then 'table'",
+            "You can go to the next cell by pressing the 'Tab' key",         
+            "You can delete everything by clicking the gear then 'Delete All', or use the shortcut Ctrl+Shift+L",
+            "Some more shortcuts in the link in the (?) at the top left!"
+        ],
+        explanationImage: 'https://i.ibb.co/fsBx5kH/Two-points-Non-Linear-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let m, b, x1, x2, k1, k2, g_x1, g_x2;
+            let g_x1_num, g_x2_num;
+
+            // Loop to ensure integer g(x) values are generated
+            while (true) {
+                m = randNonZero(-5, 5);
+                b = randNonZero(-10, 10);
+                x1 = randInt(-10, 10);
+                x2 = randInt(-10, 10);
+                k1 = randInt(-10, 10);
+                k2 = randNonZero(-10, 10);
+
+                while (x1 === -k2) { x1 = randInt(-10, 10); }
+                while (x2 === x1 || x2 === -k2) { x2 = randInt(-10, 10); }
+                
+                g_x1_num = m * x1 + b + k1;
+                g_x2_num = m * x2 + b + k1;
+
+                // Check for integer results before breaking the loop
+                if (g_x1_num % (x1 + k2) === 0 && g_x2_num % (x2 + k2) === 0) {
+                    g_x1 = g_x1_num / (x1 + k2);
+                    g_x2 = g_x2_num / (x2 + k2);
+                    break; 
+                }
+            }
+            
+            /*calculator.setExpressions([
+                { id: 'f_function', latex: `f(x) = ${m}x + ${b}`, hidden: true },
+                { id: 'g_function', latex: `g(x) = \\frac{${m}x + ${b} + ${k1}}{x + ${k2}}`, hidden: true }
+            ]); I figured this kinda thing might come in useful if we want to input in the desmos working, but that seemed like a TON of work soo*/
+
+            let k1_display = "";
+            if (k1 > 0) {
+                k1_display = ` + ${k1}`;
+            } else if (k1 < 0) {
+                k1_display = ` - ${Math.abs(k1)}`;
+            }
+
+            let k2_display = "";
+            if (k2 > 0) {
+                k2_display = ` + ${k2}`;
+            } else if (k2 < 0) {
+                k2_display = ` - ${Math.abs(k2)}`;
+            }
+
+
+            const tableHtml = `
+            <style>
+                #question-table {
+                    border-collapse: collapse;
+                    margin: auto;
+                    font-size: 1.2rem;
+                }
+                #question-table th, #question-table td {
+                    border: 1px solid #ccc;
+                    padding: 8px 12px;
+                    text-align: center;
+                }
+            </style>
+            <p>Given that f(x) is a linear function and $$g(x) = \\frac{f(x) ${k1_display}}{x ${k2_display}}$$ Use the table of values given to find the y-intercept of the graph y = f(x)</p>
+            <table id="question-table">
+                <thead>
+                    <tr>
+                        <th>x</th>
+                        <th>g(x)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>$$${x1}$$</td>
+                        <td>$$${g_x1}$$</td>
+                    </tr>
+                    <tr>
+                        <td>$$${x2}$$</td>
+                        <td>$$${g_x2}$$</td>
+                    </tr>
+                </tbody>
+            </table>
+            `;
+
+            let cleanQuestionText = tableHtml;
+
+            const questionText = tableHtml;
+            const answer = b;
+            return { questionText, answer };
+        }
+    },
+    
+    
+    /*{
+        id: 'Absolute Value',
+        title: 'Absolute Value',
+        tips: [
+            "This question does not need to involve a regression",
+        ],
+        explanationImage: 'https://i.ibb.co/3k03P3M/placeholder-image.png',
+        questionGenerator: function() {
+            const k = randInt(-10, 10);
+            const c_value = randNonZero(1, 15) * 2;
+            
+            const sumOfSolutions = 2 * k;
+
+            let k_display = "";
+            if (k > 0) {
+                k_display = ` - ${k}`;
+            } else if (k < 0) {
+                k_display = ` + ${Math.abs(k)}`;
+            }
+
+            const questionText = `
+                <p style="text-align: center; margin: 0;">What is the sum of the solutions to the given equation?</p>
+                <div style="font-size: 1.5rem; font-style: italic; text-align: center; margin: 10px 0;">
+                    $$|x${k_display}| = -|x${k_display}| + ${c_value}$$
+                </div>
+            `;
+            
+            const answer = sumOfSolutions;
+            return { questionText, answer };
+        }
+    }, Commenting this out because it doesn't require a regression and is pretty elementary imo ._.*/
+    
+
+        {
+        id: 'Circle Regression',
+        title: 'Circle Regression',
+        tips: [
+            "The standard form for the equation of a circle is (x+h)² + (y+k)²=r² where (h,k) is the centre",
+            "Therefore, you can plot the circle just using the centre point given",
+            "The next step is to plot at least three points that lie on a circle into a table, then run the regression using those points:",
+            "The regression is x₁²+y₁²+ax₁+by₁+c~0",
+            "You can write 'table' or do Ctrl+Alt+T in Desmos instead of clicking '+' then 'table'",
+            "You can go to the next cell by pressing the 'Tab' key"
+        ],
+        explanationImage: 'https://i.ibb.co/ymSb2Zrk/Circle-Regression-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            const h = randInt(-10, 10);
+            const k = randInt(-10, 10);
+            const r = randInt(1, 10);
+
+            const a = -2 * h;
+            const b = -2 * k;
+            const c = h * h + k * k - r * r;
+
+            const options = ['a', 'b', 'c'];
+            const questionType = options[Math.floor(Math.random() * options.length)];
+            let questionText = '';
+            let answer = 0;
+
+            switch(questionType) {
+                case 'a':
+                    questionText = `A circle has a center at (${h}, ${k}) and a radius of ${r}. An equation of this circle is $$x^2 + y^2 + ax + by + c = 0$$ What is the value of a?`;
+                    answer = a;
+                    break;
+                case 'b':
+                    questionText = `A circle has a center at (${h}, ${k}) and a radius of ${r}. An equation of this circle is $$x^2 + y^2 + ax + by + c = 0$$ What is the value of b?`;
+                    answer = b;
+                    break;
+                case 'c':
+                    questionText = `A circle has a center at (${h}, ${k}) and a radius of ${r} An equation of this circle is $$x^2 + y^2 + ax + by + c = 0$$ What is the value of c?`;
+                    answer = c;
+                    break;
+            }
+
+            return { questionText, answer };
+        }
+    },
+
+    {
+    id: 'Trignometric Identity Evaluation',
+    title: 'Trigonometric Identity Evaluation',
+    tips: [
+    "Don't forget to set it to degrees through the wrench icon!",
+    "the regression we run here is sin(a)~value and sin(b)~value",
+    "After that, all you gotta do is plug in the value or do y₁ = value of y (you can't use y by itself in the equation! x and y cannot be used as regression terms)"
+    ],
+    explanationImage: 'https://i.ibb.co/mCV5z8c7/Trignometric-Identity-Evaluation-Example.png',
+    tutorialLink: '',
+    questionGenerator: function() {
+        // Function to generate a rational value between 0 and 1, rounded to 2 decimal places.
+        const generateRationalValue = () => {
+            let numerator;
+            let denominator;
+            do {
+                numerator = Math.floor(Math.random() * 90) + 1; // 1 to 90
+                denominator = Math.floor(Math.random() * 90) + 1; // 1 to 90
+            } while (numerator >= denominator);
+            return (numerator / denominator).toFixed(2);
+        };
+
+        // Randomize the values for sin(a) and cos(b)
+        const sinA_val = parseFloat(generateRationalValue());
+        const cosB_val = parseFloat(generateRationalValue());
+        
+        // Randomize the coefficients for the two terms
+        const coeff1 = Math.floor(Math.random() * 4) + 2;
+        const coeff2 = Math.floor(Math.random() * 4) + 2;
+
+        // Randomize the value of y; trying to get a non-zero integer
+        let y_val = Math.floor(Math.random() * 31) - 15; // Random integer between -15 and 15
+        if (y_val === 0) {
+            y_val = 1; // Ensure y is not zero
+        }
+
+        // The expression to display to the user
+        const expression = `${coeff1} \\cos(90^\\circ - a) \\cos(b^\\circ) + ${coeff2} \\sin(a + y)^\\circ \\sin(90^\\circ - b)`;
+
+        // For the expression to be solvable with the given information, we need to make an assumption.
+        // We will assume that a and b are such that cos(a) and sin(b) can be determined.
+        // Using the Pythagorean identity: sin^2(x) + cos^2(x) = 1
+        // We have cos(a) = sqrt(1 - sin^2(a)) and sin(b) = sqrt(1 - cos^2(b))
+        // Since we are given sin a and cos b, and a and b are in the first quadrant (0 < b < 90),
+        // we know cos a and sin b are positive.
+        const cosA_val = Math.sqrt(1 - sinA_val * sinA_val);
+        const sinB_val = Math.sqrt(1 - cosB_val * cosB_val);
+        
+        // Now we evaluate the full expression with the given values and y
+        const term1 = coeff1 * sinA_val * cosB_val;
+        
+        // Using the angle addition formula for sin(a+y)
+        const sin_a_plus_y = sinA_val * Math.cos(y_val * Math.PI / 180) + cosA_val * Math.sin(y_val * Math.PI / 180);
+        
+        const term2 = coeff2 * sin_a_plus_y * cosB_val;
+
+        // The final answer is the sum of the two terms, rounded to 3 decimal places.
+        const answer = parseFloat((term1 + term2).toFixed(3));
+
+        const questionText = `For the expression $$${expression}$$ where $$\\sin a^\\circ = ${sinA_val.toFixed(2)}$$ $$\\cos b^\\circ = ${cosB_val.toFixed(2)}$$ what is the value of the expression (to three decimal places) when y = ${y_val}?`;
+
+        return { questionText, answer: answer };
+        }
+    },
+
+    {
+    id: 'Equivalent Expression Constants',
+    title: 'Equivalent Expression Constants',
+    tips: [
+        "Here, we can plug the equation given into desmos with 'x₁' instead of 'x' and '~' instead of '='",
+        "However, this equation must be true for all values of x₁. Therefore, enter x₁ = [1...10] or something to that effect. After that, all we need to do is a+b+c"
+    ],
+    explanationImage: 'https://i.ibb.co/8Lv8bK8w/Equivalent-Expression-Constants.png', /* forgot to write example lol */
+    tutorialLink: '',
+    questionGenerator: function() {
+        let x2_coeff, x_coeff, const_term;
+        let p1, d1, e1, p2, d2, e2;
+
+        // Use a loop to ensure coefficients are not 1 or -1 because I don't wanna deal with the coeff being one :sob:
+        do {
+            // Generate random integers for the binomials on the RHS, ensuring they are not 1 or -1
+            // randNonZero is assumed to exclude 0. We'll manually exclude 1 and -1 here.
+            
+            // p1 and p2 must not be 1 or -1
+            do { p1 = randNonZero(-5, 5); } while (Math.abs(p1) === 1);
+            do { d1 = randNonZero(-5, 5); } while (Math.abs(d1) === 1);
+            e1 = randNonZero(-10, 10); // e1 can be 1 or -1, as it's a constant term, not a coefficient
+
+            do { p2 = randNonZero(-5, 5); } while (Math.abs(p2) === 1);
+            do { d2 = randNonZero(-5, 5); } while (Math.abs(d2) === 1);
+            e2 = randNonZero(-10, 10); // e2 can be 1 or -1
+
+            // Expand and find the coefficients of the simplified RHS
+            x2_coeff = p1 * d1 * d1 + p2 * d2 * d2;
+            x_coeff = p1 * 2 * d1 * e1 + p2 * 2 * d2 * e2;
+            const_term = p1 * e1 * e1 + p2 * e2 * e2;
+
+        // Re-run the loop if any of the resulting LHS coefficients are 1 or -1, OR if any are 0.
+        // We also check for 0, as randNonZero might not guarantee the final sums are non-zero.
+        } while (Math.abs(x2_coeff) <= 1 || Math.abs(x_coeff) <= 1 || Math.abs(const_term) <= 1);
+
+        // Generate random integer denominators for a, b, and c
+        const d_a = randNonZero(2, 6);
+        const d_b = randNonZero(2, 6);
+        const d_c = randNonZero(2, 6);
+
+        // Calculate a, b, and c by equating coefficients
+        // Note: a, b, c could still be 1 or -1 if d_a, d_b, d_c are used to cancel out a larger number.
+        // E.g., if x2_coeff is 3 and d_a is 1/3 (not possible here since d_a is >= 2), or a is simply 1 or -1.
+        // Since a, b, c are the unknowns, we want them to be integers > 1 or < -1.
+
+        const a = x2_coeff * d_a;
+        const b = x_coeff * d_b;
+        const c = const_term * d_c;
+
+        const sum = a + b + c;
+        
+        const p2_display = p2 < 0 ? `- ${Math.abs(p2)}` : `+ ${p2}`;
+        const e1_display = e1 < 0 ? `- ${Math.abs(e1)}` : `+ ${e1}`;
+        const e2_display = e2 < 0 ? `- ${Math.abs(e2)}` : `+ ${e2}`;
+
+        const questionText = `If $$(\\frac{a}{${d_a}})x^2 + (\\frac{b}{${d_b}})x + \\frac{c}{${d_c}} = ${p1}(${d1}x ${e1_display})^2 ${p2_display}(${d2}x ${e2_display})^2$$ what is the sum of a+b+c?`;
+
+        return { questionText, answer: sum };
+        }
+    },
+
+    { /* We're producing exponential coefficients of 1 but eh */ 
+    id: 'Exponential Coefficients',
+    title: 'Exponential Coefficients',
+    tips: [
+    "In the SAT, they usually ask you which form displays c as a coefficient. Remember that, in some questions, the coefficient of the exponent could count!.",
+    "What we can do here is plug in one of the forms (they're all equivalent)",
+    "After that, run the regression 'f(a+increase)/f(a)~c' where the increase is the fraction by which 'x' increases to increase f(x) by a factor of 'c'. This will work for any value of 'a'"
+    ],
+    explanationImage: 'https://i.ibb.co/4Z3C3kGj/Exponential-Coefficients-Example.png',
+    tutorialLink: '',
+    questionGenerator: function() {
+        const a = Math.floor(Math.random() * 50) + 10;
+        
+        let c_val, p_den;
+        let unit_base;
+        let exp_coeffs;
+
+        do {
+            // Find a base (let's call it 'b') that has multiple integer roots, and keep it under 1000.
+            const base_b_options = [8, 16, 27, 64, 81, 125, 216, 256, 343, 512, 729];
+            unit_base = base_b_options[Math.floor(Math.random() * base_b_options.length)];
+
+            // Find an integer factor 'c' and an integer exponent 'p_den' such that c^(p_den) = unit_base.
+            // Also, we need at least 3 other integer factors.
+            const factors = [];
+            for (let i = 2; i <= Math.sqrt(unit_base); i++) {
+                if (unit_base % i === 0) {
+                    factors.push(i);
+                    if (i !== unit_base / i) {
+                        factors.push(unit_base / i);
+                    }
+                }
+            }
+            factors.sort((x, y) => x - y);
+            
+            // We need at least 4 integer bases including the unit base
+            const possible_exponents = new Set();
+            for(let base of factors) {
+                const exp = Math.round(Math.log(unit_base) / Math.log(base));
+                if (Math.pow(base, exp) === unit_base && exp > 1) {
+                    possible_exponents.add(exp);
+                }
+            }
+            possible_exponents.add(1); // The unit base itself
+            
+            exp_coeffs = Array.from(possible_exponents);
+            
+            // From the valid '(c, p_den)' pairs, pick one for the question.
+            const valid_pairs = exp_coeffs.filter(exp => exp > 1);
+            if (valid_pairs.length > 0) {
+                p_den = valid_pairs[Math.floor(Math.random() * valid_pairs.length)];
+                c_val = Math.pow(unit_base, 1 / p_den);
+            }
+
+        } while (!Number.isInteger(c_val) || exp_coeffs.length < 4);
+
+        // Remove the chosen exponent from the list of coefficients to be used for the other forms
+        const exp_coeffs_to_use = exp_coeffs.filter(exp => exp !== p_den);
+        
+        // Take the first three unique coefficients to generate the other forms
+        const final_coeffs = [p_den, ...exp_coeffs_to_use.slice(0, 3)];
+
+        const forms = [];
+        const used_bases = new Set();
+        
+        // The first form, which shows the value of c as the base
+        forms.push(`$$f(x) = ${a}(${c_val})^{${p_den}x}$$`);
+        used_bases.add(c_val);
+
+        // Generate the other 3 equivalent forms with integer bases and unique exponent coefficients
+        for (let i = 1; i < final_coeffs.length; i++) {
+            const exp_i = final_coeffs[i];
+            const base_i = Math.round(Math.pow(unit_base, 1 / exp_i));
+            
+            // The logic ensures bases are integers, so we just need to avoid duplicates
+            if (!used_bases.has(base_i)) {
+                forms.push(`$$f(x) = ${a}(${base_i})^{${exp_i}x}$$`);
+                used_bases.add(base_i);
+            } else {
+                // In the rare case of a duplicate, just add the unit base form
+                forms.push(`$$f(x) = ${a}(${unit_base})^{x}$$`);
+            }
+        }
+        
+        // Shuffle the forms to display them in a random order
+        for (let i = forms.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [forms[i], forms[j]] = [forms[j], forms[i]];
+        }
+        
+        const questionText = `For the function f, for every increase of 1/${p_den} in the value of x, the value of f(x) increases by a factor of c. The following forms of the function f are all equivalent.
+        ${forms[0]}
+        ${forms[1]}
+        ${forms[2]}
+        What is the value of c?`;
+        
+        const answer = c_val;
+        
+        return { questionText, answer: answer };
+        }
+    },
+
+
+        {
+        id: 'Factoring a Quartic Function',
+        title: 'Factoring a Quartic Function',
+        tips: [
+            "The key here is that all a, b, c and d must all be integers",
+            "We can find k by finding the gcf of the three coefficients given (use the Desmos gcf (or gcd, same thing) built-in function), then run a regression and try values until one makes all the values integers. Remember that it must be true for all values of 'x', so do something to the effect of x₁=[1...10] (x₁ could be any value, 1-10 is chosen arbitrarily)",
+            "After you've found four integer values for a, b, c and d, check the value of both ab and cd. This is because ab could equal cd (look at how the expression is structured. (ax²+b) can swap with (cx²+d))",
+            "A shorter regression not shown in the example is [ac , ad+bc , bd]~[q/k , s/k , t/k] where 'q', 's' and 't' are the coefficients of x⁴, x² and x⁰, respectively. You will not need to set x₁=[1...10] (this type of regression is explained in 'Complex Percentage Relationships') "
+        ],
+        explanationImage: 'https://i.ibb.co/gMZw01Qp/Factoring-a-Quartic-Function-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            // Helper function to get all positive integer factors of a number
+            function getIntegerFactors(num) {
+                const factors = new Set();
+                const absNum = Math.abs(num);
+                for (let i = 1; i <= Math.sqrt(absNum); i++) {
+                    if (absNum % i === 0) {
+                        factors.add(i);
+                        factors.add(absNum / i);
+                    }
+                }
+                return Array.from(factors).sort((x, y) => x - y);
+            }
+
+            let coeff_x4, coeff_x2, coeff_const;
+            let smallest_ab;
+            let isSolvable = false;
+
+            // Loop until a solvable problem with a unique smallest solution is generated
+            while (!isSolvable) {
+                // Generate base factors for the quartic, all are now positive
+                const k = randInt(1, 3);
+                const a = randInt(1, 5);
+                const b = randInt(1, 10);
+                const c = randInt(1, 5);
+                const d = randInt(1, 10);
+
+                // Expand the factored form: k * (ac*x⁴ + (ad+bc)*x² + bd)
+                coeff_x4 = k * a * c;
+                coeff_x2 = k * (a * d + b * c);
+                coeff_const = k * b * d;
+
+                const possible_ab_values = new Set();
+                
+                // Get all positive integer factors for the leading and constant coefficients
+                const x4_factors = getIntegerFactors(coeff_x4);
+                const const_factors = getIntegerFactors(coeff_const);
+
+                // Iterate through all possible factor combinations to find all valid solutions
+                for (const ac of x4_factors) {
+                    const ac_prime = coeff_x4 / ac;
+
+                    for (const bd of const_factors) {
+                        const bd_prime = coeff_const / bd;
+                        
+                        // Check if the cross-multiplication of factors sums to the middle term
+                        if ((ac * bd_prime + ac_prime * bd) === coeff_x2) {
+                            possible_ab_values.add(ac * bd);
+                        }
+                    }
+                }
+                
+                // A valid question must have at least one solution
+                if (possible_ab_values.size > 0) {
+                    smallest_ab = Math.min(...possible_ab_values);
+                    isSolvable = true; // Found a solvable problem
+                }
+            }
+            
+            const questionText = `
+                The given quadratic function $$${coeff_x4}x^4 + ${coeff_x2}x^2 + ${coeff_const}$$ has factors in the form $$(k)(ax^2 + b)(cx^2 + d)$$ If a, b, c, d, and k are positive integers, what is the smallest possible value of ab?
+            `;
+
+            const answer = smallest_ab;
+            return { questionText, answer };
+        }
+    },
+
+        {
+        id: 'Simple Percentage Change', /* Maybe I should arrange them by difficulty lol */
+        title: 'Simple Percentage Change',
+        tips: [
+            "Here we can learn to use regressions and the desmos % of (typed with shift+5) built-in function to solve questions like these with Desmos",
+            "Run a regression like '140% of x₁ ~ 77' when the value increases by 40%",
+            "A percentage increase is calculated as: original value × (1 + percent/100)",
+            "A percentage decrease is calculated as: original value × (1 - percent/100)"
+        ],
+        explanationImage: 'https://i.ibb.co/zhpSdvWh/Simple-Percentage-Change-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let x;
+            let percent;
+            let result;
+            let isIncrease;
+
+            // Loop until a whole number result is generated
+            while (true) {
+                // Generate a random positive integer for the original value (x)
+                x = randInt(1, 100);
+
+                // Decide randomly if it's an increase or decrease
+                isIncrease = Math.random() < 0.5;
+
+                // Generate a random percent change that is a multiple of 5
+                // Max percent is 95 to ensure a positive result for decrease
+                percent = randInt(1, isIncrease ? 15 : 19) * 5;
+
+                if (isIncrease) {
+                    // Calculate the result for an increase
+                    result = x * (100 + percent) / 100;
+                } else {
+                    // Calculate the result for a decrease
+                    result = x * (100 - percent) / 100;
+                }
+
+                // Check if the result is a whole number
+                if (result % 1 === 0) {
+                    break;
+                }
+            }
+            
+            let questionText;
+            if (isIncrease) {
+                questionText = `The result of increasing the quantity x by ${percent}% is ${result}. What is the value of x?`;
+            } else {
+                questionText = `The result of decreasing the quantity x by ${percent}% is ${result}. What is the value of x?`;
+            }
+
+            const answer = x;
+
+            return { questionText, answer };
+        }
+    },
+
+        {
+        id: "Complex Percentage Relationships (it's complicated, ok?)",
+        title: 'Complex Percentage Relationships',
+        tips: [
+            "Here, we can use the same % of (typed with shift+5) built-in function that we did for Simple Percentage Change, but can we also use a slightly more complicated regression:",
+            "To introduce this, [a,a]~[b+c,bc] would mean that we're telling Desmos to find values for a=b+c AND a=bc. If we say a=4, Desmos will say b=2 and c=2",
+            "Using that kind of regression, we can run one for a = x₁% of b, a = x₂% of c, and c = (p/100)% of b where x₁ x₂ and the percentages given!",
+            "This kind of regression is shown in the solved example below",
+        ],
+        explanationImage: 'https://i.ibb.co/C30LbzJq/Complex-Percentage-Relationships-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let percent_ab, percent_ac;
+            let p;
+
+            // Loop until a question with a whole number answer for 'p' is generated
+            while (true) {
+                // Generate two random percentages
+                // A wider range helps create more unique problems
+                percent_ab = randInt(50, 500); 
+                percent_ac = randInt(50, 500);
+
+                // Calculate the value of p using the relationship: p = (percent_ab / percent_ac) * 100
+                p = (percent_ab / percent_ac) * 100;
+
+                // Check if p is a whole number
+                if (p % 1 === 0) {
+                    break;
+                }
+            }
+            
+            const questionText = `The positive number a is ${percent_ab}% of the number b, and a is ${percent_ac}% of the number c. If c is p% of b, what is the exact value of p?`;
+
+            const answer = p;
+
+            return { questionText, answer };
+        }
+    },
+
+        {
+        id: 'Quadratic and Linear Intersection',
+        title: 'Quadratic and Linear Intersection',
+        tips: [
+            "Here, we can use a regression and the -b/2a form of the vertex to find the answer 'a'",
+            "Since the system of equations has exactly ONE solution, the vertex of the quadratic is on the horizontal line signified by y=(value)",
+            "Because of this, we can do f(v)=(y-value) where 'v' is the vertex (-b/2a) where 'b' is the coefficient of 'x' and 'a' is the coefficient of x²",
+            "This will give us the value of 'a'"
+        ],
+        explanationImage: 'https://i.ibb.co/zWXZPRjV/Quadratic-and-Linear-Intersection-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let A_coeff, b_coeff, c_const, a;
+
+            // Loop until a valid set of coefficients is generated
+            while (true) {
+                // Randomize the coefficient of x^2. Must be non-zero
+                A_coeff = randNonZero(2, 8);
+
+                // Generate a random even integer for b_coeff
+                // This helps ensure the final answer for 'a' is an integer
+                b_coeff = randInt(1, 10);
+                if (b_coeff % 2 !== 0) {
+                    b_coeff += 1;
+                }
+                
+                // Generate a random integer for the constant C in the linear equation y = C
+                c_const = randInt(-10, 10);
+
+                // Calculate the value of 'a' required for a single solution
+                a = c_const + (b_coeff * b_coeff) / (4 * A_coeff);
+
+                // 'a' is a positive, whole number
+                if (Number.isInteger(a) && a > 0) {
+                    break;
+                }
+            }
+
+            const questionText = `In the given system of equations, a is a positive constant. The system has exactly one distinct real solution. What is the value of a? $$y = ${c_const}$$ $$y = ${A_coeff}x^2 + ${b_coeff}x + a$$`;
+            
+            const answer = a;
+
+            return { questionText, answer };
+            }
+        },
+
+        {
+        id: 'Quadratic System of Equations',
+        title: 'Quadratic System of Equations',
+        tips: [
+            "This is another example where we can use the [a,a]~[b+c,bc] form of regression",
+            "We can regress both expressions to the values they are made equal to, and then plot the first expression given",
+            "After that, find the less positive or more positive value by plotting and checking x²+bx+c=0"
+        ],
+        explanationImage: 'https://i.ibb.co/VcTPtfH7/Quadratic-System-of-Equations-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let x1, x2;
+            
+            // Loop until two distinct integer roots are generated
+            while (true) {
+                x1 = randInt(-10, 10);
+                x2 = randInt(-10, 10);
+                if (x1 !== x2) {
+                    break;
+                }
+            }
+
+            // Calculate integer coefficients b and c from the roots
+            const b = -(x1 + x2);
+            const c = x1 * x2;
+            
+            // Calculate the two numerators from the quadratic formula for the equation x^2+bx+c=0
+            const discriminant = b * b - 4 * c;
+            const numerator1 = -b + Math.sqrt(discriminant);
+            const numerator2 = -b - Math.sqrt(discriminant);
+
+            // Randomly decide whether to ask for the smaller or larger value
+            const askSmaller = Math.random() < 0.5;
+            const answer = askSmaller ? Math.min(x1, x2) : Math.max(x1, x2);
+            
+            // Construct the question string with the full expression and randomized values
+            const questionText = `In the given equation $$x^2+bx+c = 0$$ b and c are constants. If: $$-b + \\sqrt{b^2 - 4c} = ${numerator1}$$ $$-b - \\sqrt{b^2 - 4c} = ${numerator2}$$ what is the ${askSmaller ? 'less positive' : 'more positive'} value of x?`;
+            
+            return { questionText, answer };
+        }
+    },
+
+        {
+        id: 'Parabola Symmetry (Vertex & Intercepts)',
+        title: 'Parabola Symmetry (Vertex & Intercepts)',
+        tips: [
+            "You don't really need a regression here, but this may be helpful practice for the Quadratic Regression Limit question category!",
+            "If the question asks for the x-intercept, what we can do is say 'd'= the distance of an x-intercept from the vertex (a parabola is symmetrical so the distance will be the same for both x-intercepts)",
+            "If the question asks for the vertex, you can simply run the midpoint function midpoint((x₁,0),(x₂,0)) to get the x coordinate of the vertex",
+            "If the question gave you the vertex x and y coordinates and one x-intercept you could actually plot the graph! You have the vertex and two x-intercepts. If you plot those on a table and run a quadratic regression you'll get the expression"
+        ],
+        explanationImage: 'https://i.ibb.co/7t6yBDJK/Parabola-Symmetry-Vertex-and-Intercepts.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let x1_intercept, x2_intercept;
+            
+            // Loop until two distinct integer intercepts are generated
+            while (true) {
+                x1_intercept = randInt(-15, 15);
+                x2_intercept = randInt(-15, 15);
+                if (x1_intercept !== x2_intercept) {
+                    break;
+                }
+            }
+
+            // The x-coordinate of the vertex is the midpoint of the intercepts
+            const vertex_x = (x1_intercept + x2_intercept) / 2;
+            const vertex_y = randInt(-10, 10); // A random y-value for the vertex, just for display
+
+            // Randomly choose what to ask for
+            const askForVertex = Math.random() < 0.5;
+
+            let questionText;
+            let answer;
+
+            if (askForVertex) {
+                // Ask for the vertex x-coordinate
+                questionText = `When the quadratic function f is graphed in the xy-plane, where y = f(x), its x-intercepts are (${x1_intercept}, 0) and (${x2_intercept}, 0). What is the x-coordinate of the vertex?`;
+                answer = vertex_x;
+            } else {
+                // Ask for the other x-intercept
+                questionText = `When the quadratic function f is graphed in the xy-plane, where y = f(x), its vertex is (${vertex_x}, ${vertex_y}). One of the x-intercepts of this graph is (${x1_intercept}, 0). What is the x-value of the other x-intercept of the graph?`;
+                answer = x2_intercept;
+            }
+            
+            return { questionText, answer };
+        }
+    },
+
+    {
+    id: 'Quadratic Regression Limit',
+    title: 'Quadratic Regression Limit',
+    tips: [
+    "We are given one point on the parabola: the vertex. Two other points are the x-intercepts",
+    "Like in the Parabola Symmetry (Vertex & Intercepts) quesstion category, the x-intercepts' x-values are the vertex's + 'd', the distance of an x-intercept from the vertex",
+    "We can plot these three points in a table and run a regression with them. As we increase the value of 'd', the value of 'a+b+c' decreases",
+    "Remember, we want an integer value. If you make 'd' big enough, the value of 'a+b+c' will be shown as equal to 'c', but it's actually not and Desmos is approximating because the values of 'a' and 'b' are still nonzero and positive",
+    "Remember that you should be able to do this by hand! Desmos is simply here to help you be faster!",
+    "This question structured specifically can actually be solved simply by doing y+1, which is kinda funny ngl"
+    ],
+    explanationImage: 'https://i.ibb.co/8DktjdVy/Quadratic-Regression-Limit-Example.png',
+    tutorialLink: '',
+
+    questionGenerator: function() {
+        let h;
+        let k;
+        let answer;
+
+        do {
+            // Randomly generate the x-coordinate of the vertex (h)
+            h = Math.floor(Math.random() * 11) - 5; 
+            // Randomly generate the y-coordinate of the vertex (k) to be negative
+            k = Math.floor(Math.random() * 11) - 15; 
+            
+            // The smallest possible integer value of a+b+c is 1+k
+            answer = 1 + k;
+
+        // Loop until the condition is met: answer + 1 is not equal to k
+        } while (answer + 1 === k);
+
+        const questionText = `In the xy-plane, a parabola has vertex (${h}, ${k}) and intersects the x-axis at two points. The equation of the parabola is written in the form $$y = ax^2 + bx + c$$ where a, b, c are constants. What is the smallest possible integer value of a+b+c?`;
+        
+        return { questionText, answer: parseFloat(answer.toFixed(3)) };
+        }
+    },
+
+        {
+        id: 'circle-radius-non-standard',
+        title: 'Radius of Non-Standard Circle',
+        tips: [
+            "Here, we can simply choose any value for 'p' and find the radius, then find 'n'",
+            "To do this quickly with Desmos, we can plug in the equation, set a value for 'p', use the built-in distance() Desmos function and run a simple regression of np~radius to find 'n'",
+            "Remember to use radius, not diameter!"
+        ],
+        explanationImage: 'https://i.ibb.co/MDbRthrX/Radius-of-Non-Standard-Circle-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let a, h, k, n;
+
+            // Loop until a valid problem is generated
+            while (true) {
+                // Generate random integer values for the parameters
+                a = randInt(2, 8);
+                h = randInt(1, 10);
+                k = randInt(1, 10);
+                n = randInt(1, 10);
+
+                // Ensure the term for the radius squared is positive after expansion
+                // The expanded equation will be (x-hp)^2 + (y-kp)^2 = (np)^2
+                // which leads to a constant term of (n^2 - h^2 - k^2)p^2
+                // So n^2 - h^2 - k^2 must be positive
+                if (n * n > h * h + k * k) {
+                    break;
+                }
+            }
+
+            // Calculate the coefficients for the non-standard equation
+            const b_coeff = -2 * a * h;
+            const c_coeff = -2 * a * k;
+            const d_const = a * (n * n - h * h - k * k);
+            
+            // Construct the question string with the random values
+            // Add a 'p' term to the b and c coefficients to match the example format
+            const equation = `$$${a}x^2 ${b_coeff < 0 ? `- ${Math.abs(b_coeff)}` : `+ ${b_coeff}`}px + ${a}y^2 ${c_coeff < 0 ? `- ${Math.abs(c_coeff)}` : `+ ${c_coeff}`}py = ${d_const < 0 ? `- ${Math.abs(d_const)}` : d_const}p^2$$`;
+            
+            const questionText = `In the xy-plane, the graph of the given equation is a circle. The length of the radius of the circle is np, where n and p are positive constants. What is the value of n? ${equation}`;
+            
+            // The answer is the random integer n that was chosen
+            const answer = n;
+
+            return { questionText, answer };
+            }
+        },
+
+
+        {
+        id: 'trinomial-factoring',
+        title: 'Trinomial Factoring',
+        tips: [
+            "For this question, you don't need any fancy regressions",
+            "A trinomial can be expressed in the form k(x+a)(x+b)(x+c) where a b and c are NOT coefficients of x³ x² and x",
+            "Because of this, the roots of the trinomial expression given will be possible values of 'b' multiplied by -1 (because if 5 is a root, (x-5) is a factor because x-5=0 gives x=5, and if -5 is a root, (x+5) is a factor because x+5=0 gies x=-5)"
+        ],
+        explanationImage: 'https://i.ibb.co/8tPybxt/Trinomial-Factoring-Example.png',
+        tutorialLink: '', /* My placeholder was https://youtu.be/dQw4w9WgXcQ. Very nice video of cute pupy */
+        questionGenerator: function() {
+            // We want to generate a question similar to the one in the image.
+            // The polynomial is of the form ax^3 + Bx^2 + Cx
+            // It factors into k*x*(x+b1)*(x+b2)
+            // Or a polynomial of the form ax^3 + bx^2 + cx + d
+            // It factors into k*(x+b1)*(x+b2)*(x+b3)
+            
+            // Generate two positive integer roots (for x+b terms)
+            const b1 = randInt(2, 10);
+            const b2 = randInt(2, 10);
+
+            // Generate a leading coefficient
+            const a_coeff = randInt(2, 4);
+            
+            // E x p a n d the polynomial: a_coeff * x * (x + b1) * (x + b2)
+            // = a_coeff * x * (x^2 + (b1+b2)x + b1*b2)
+            // = a_coeff * x^3 + a_coeff*(b1+b2)x^2 + a_coeff*(b1*b2)x
+            const B_coeff = a_coeff * (b1 + b2);
+            const C_coeff = a_coeff * b1 * b2;
+
+            // Determine the question type: with an x factor or without
+            const hasXFactor = Math.random() < 0.5;
+
+            if (hasXFactor) {
+                const questionText = `One of the factors of $$${a_coeff}x^3 + ${B_coeff}x^2 + ${C_coeff}x$$ is (x + b), where b is a positive constant. What is the smallest possible value of b?`;
+                const answer = Math.min(b1, b2);
+                return { questionText, answer };
+            } else {
+                // Now, generate a polynomial without a common x factor
+                const b3 = randInt(2, 10);
+                const B_coeff_noX = a_coeff * (b1 + b2 + b3);
+                const C_coeff_noX = a_coeff * (b1 * b2 + b1 * b3 + b2 * b3);
+                const D_coeff_noX = a_coeff * b1 * b2 * b3;
+
+                const questionText = `One of the factors of $$${a_coeff}x^3 + ${B_coeff_noX}x^2 + ${C_coeff_noX}x + ${D_coeff_noX}$$ is (x + b), where b is a positive constant. What is the smallest possible value of b?`;
+                const answer = Math.min(b1, b2, b3);
+                return { questionText, answer };
+            }
+        }
+    }
+]; // FIN!!!
+
+
+// ===== Global State =====
+let currentQuestion = { answer: null, category: null };
+let questionSolved = false;
+
+// ===== New Question Logic =====
+function newQuestion() {
+    // ALWAYS clear Desmos for a new question
+      calculator.setExpressions([]); /* This does NOT work smh */
+
+    const checkedBoxes = document.querySelectorAll('#category-selection input[type="checkbox"]:checked');
+    if (checkedBoxes.length === 0) {
+        alert("Please select at least one category to practice!");
+        return;
+    }
+
+    const randomCategoryIndex = randInt(0, checkedBoxes.length - 1);
+    const categoryId = checkedBoxes[randomCategoryIndex].value;
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) return;
+    
+    const questionBox = document.getElementById('question-box');
+    if (category.id === 'Exponential Rate of Change','Two points non-linear') {
+        questionBox.style.whiteSpace = 'normal';
+    } else {
+        questionBox.style.whiteSpace = 'pre-wrap';
+    }    
+
+    const { questionText, answer } = category.questionGenerator();
+    currentQuestion = { answer, category };
+    questionSolved = false;
+
+    document.getElementById('current-category-title').innerText = category.title;
+    
+    // Use innerHTML instead of innerText
+    document.getElementById('question-box').innerHTML = questionText; 
+    
+    // Tell MathJax to typeset the new content
+    MathJax.typeset();
+    
+    document.getElementById('answer-box').value = '';
+    document.getElementById('answer-box').focus();
+    document.getElementById('result').innerText = '';
+    
+    const tipsList = document.getElementById('tips-list');
+    tipsList.innerHTML = '';
+    category.tips.forEach(tip => {
+        const li = document.createElement('li');
+        li.textContent = tip;
+        tipsList.appendChild(li);
+    });
+    
+    document.getElementById('show-explanation').dataset.imageSrc = category.explanationImage;
+    document.getElementById('show-tutorial').dataset.videoUrl = category.tutorialLink;
+    resetPanelWidths(); // Reset widths for new question
+}
+
+// ===== Answer Checking Logic =====
+function handleCheckAnswer() {
+    if (currentQuestion.answer === null) return false;
+
+    const answerBox = document.getElementById('answer-box');
+    const userAnswer = answerBox.value.trim();
+    if (userAnswer === '') {
+        document.getElementById('result').innerText = "❌ Please enter an answer.";
+        document.getElementById('result').style.color = "red";
+        return false;
+    }
+    
+    // A small epsilon value for floating-point comparison
+    const epsilon = 1e-9; 
+
+    // Helper function to convert a fraction string to a number
+    const parseValue = (str) => {
+        if (typeof str === 'number') {
+            return str;
+        }
+        if (str.includes('/')) {
+            const parts = str.split('/');
+            const num = parseFloat(parts[0]);
+            const den = parseFloat(parts[1]);
+            if (!isNaN(num) && !isNaN(den) && den !== 0) {
+                return num / den;
+            }
+        }
+        // If it's not a fraction, try to parse as a number
+        const number = parseFloat(str);
+        if (!isNaN(number)) {
+            return number;
+        }
+        return NaN;
+    };
+    
+    const parsedUserAnswer = parseValue(userAnswer);
+    const parsedCorrectAnswer = parseValue(currentQuestion.answer);
+
+    // Check if both values are valid numbers before comparison
+    if (isNaN(parsedUserAnswer) || isNaN(parsedCorrectAnswer)) {
+        document.getElementById('result').innerText = "❌ Invalid answer format. Please enter a number or a fraction.";
+        document.getElementById('result').style.color = "red";
+        return false;
+    }
+
+    // Compare with a small tolerance for floating-point accuracy
+    const isCorrect = Math.abs(parsedUserAnswer - parsedCorrectAnswer) < epsilon;
+
+    if (isCorrect) {
+        document.getElementById('result').innerText = "✅ Correct!";
+        document.getElementById('result').style.color = "green";
+        if (!questionSolved) {
+            incrementCounter();
+            questionSolved = true;
+        }
+        return true;
+    } else {
+        document.getElementById('result').innerText = `❌ Incorrect. The correct answer was ${currentQuestion.answer}.`;
+        document.getElementById('result').style.color = "red";
+        answerBox.focus();
+        return false;
+    }
+}
+
+
+// ===== UI Initialization & Event Handlers =====
+function populateCategoryCheckboxes() {
+    const container = document.getElementById('category-selection');
+    categories.forEach(cat => {
+        const div = document.createElement('div');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `cat-${cat.id}`;
+        checkbox.value = cat.id;
+        checkbox.checked = true;
+
+        const label = document.createElement('label');
+        label.htmlFor = `cat-${cat.id}`;
+        label.textContent = cat.title;
+
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        container.appendChild(div);
+    });
+}
+
+// Category collapsible menu
+document.getElementById('category-header').addEventListener('click', () => {
+    const content = document.getElementById('category-collapsible-content');
+    const btn = document.getElementById('category-toggle-btn');
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        btn.textContent = '[−]';
+    } else {
+        content.style.display = 'none';
+        btn.textContent = '[+]';
+    }
+});
+
+
+document.getElementById('select-all').addEventListener('click', () => {
+    document.querySelectorAll('#category-selection input').forEach(cb => cb.checked = true);
+});
+document.getElementById('deselect-all').addEventListener('click', () => {
+    document.querySelectorAll('#category-selection input').forEach(cb => cb.checked = false);
+});
+
+// Explanation Modal
+const modal = document.getElementById('explanation-modal');
+document.getElementById('show-explanation').addEventListener('click', () => {
+    const imgSrc = document.getElementById('show-explanation').dataset.imageSrc;
+    if (imgSrc) {
+        document.getElementById('explanation-modal-content').src = imgSrc;
+        modal.style.display = 'block';
+    } else {
+        alert("Please start a question first to see an example.");
+    }
+});
+document.getElementById('show-tutorial').addEventListener('click', () => {
+    // This line reads the dynamically set URL from the data-video-url attribute
+    const videoUrl = document.getElementById('show-tutorial').dataset.videoUrl;
+    
+    if (videoUrl && videoUrl.startsWith('http')) {
+        window.open(videoUrl, '_blank');
+    } else {
+        alert("I'll do this eventually I swear");
+    }
+});
+document.getElementById('close-modal').onclick = () => { modal.style.display = 'none'; };
+window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; };
+
+// ===== Stopwatch & Test state =====
+let stopwatchInterval = null, elapsedSeconds = 0;
+let testMode = false, testCount = 0, currentQuestionNum = 0;
+function startStopwatch(){  
+    elapsedSeconds = 0; updateStopwatch();
+    if(stopwatchInterval) clearInterval(stopwatchInterval);
+    stopwatchInterval = setInterval(()=>{ elapsedSeconds++; updateStopwatch(); }, 1000);
+}
+function stopStopwatch(){ if(stopwatchInterval) clearInterval(stopwatchInterval); stopwatchInterval = null; }
+function updateStopwatch(){
+    const m = String(Math.floor(elapsedSeconds/60)).padStart(2,'0');
+    const s = String(elapsedSeconds%60).padStart(2,'0');
+    document.getElementById('stopwatch').innerText = `${m}:${s}`;
+}
+
+// ===== Test Mode Functions =====
+function startTest(){
+    const n = parseInt(prompt("Enter number of questions for the test:"));
+    if(!n || n <= 0) return;
+    const checkedBoxes = document.querySelectorAll('#category-selection input[type="checkbox"]:checked');
+    if (checkedBoxes.length === 0) {
+        alert("Please select at least one category before starting a test!");
+        return;
+    }
+    testMode = true; testCount = n; currentQuestionNum = 0;
+    startStopwatch();
+    document.getElementById('times-popup').style.display = 'none';
+    newQuestion();
+}
+function endTest(finished = false){
+    if(!testMode) return;
+    stopStopwatch();
+    const answered = finished ? testCount : currentQuestionNum;
+    if(answered > 0){
+        const totalTime = elapsedSeconds;
+        const perQ = totalTime / answered;
+        pastTimes.push({ total: totalTime, questions: answered, perQuestion: perQ, timestamp: new Date().toISOString() });
+        savePastTimes();
+        alert(`Test ended. Total: ${totalTime}s — ${answered} question(s) — avg ${perQ.toFixed(2)} s/q`);
+    } else {
+        alert('Test ended with 0 questions answered — nothing saved.');
+    }
+    testMode = false; testCount = 0; currentQuestionNum = 0;
+    newQuestion();
+}
+
+// ===== Past times storage & UI =====
+let pastTimes = JSON.parse(localStorage.getItem('desmosPastTimes')||'[]');
+function savePastTimes(){ localStorage.setItem('desmosPastTimes', JSON.stringify(pastTimes)); updateTimesPopup(); }
+function updateTimesPopup(){
+    const list = document.getElementById('times-list');
+    list.innerHTML = '';
+    pastTimes.forEach((t,i)=>{
+        const date = new Date(t.timestamp).toLocaleString();
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${t.total}s</strong> — ${t.questions} q — ${t.perQuestion.toFixed(2)} s/q<br><small>${date}</small>`;
+        list.appendChild(li);
+    });
+    const avg = pastTimes.length > 0 ? (pastTimes.reduce((a,b)=>a + b.perQuestion,0)/pastTimes.length).toFixed(2) : '0';
+    document.getElementById('avg-time').innerText = avg;
+}
+document.getElementById('clear-times').addEventListener('click', ()=>{ pastTimes = []; savePastTimes(); });
+
+// ===== Show/hide popups =====
+document.getElementById('show-times').addEventListener('click', ()=>{ 
+    const p = document.getElementById('times-popup'); p.style.display = p.style.display === 'block' ? 'none' : 'block';
+});
+document.getElementById('help-button').addEventListener('click', ()=>{ 
+    const p = document.getElementById('help-popup'); p.style.display = p.style.display === 'block' ? 'none' : 'block';
+});
+
+// ===== Correct Counter =====
+let correctCount = 0;
+function incrementCounter(){
+    correctCount++;
+    const counter = document.getElementById('correct-counter');
+    counter.innerText = `✅ Correct: ${correctCount}`;
+    counter.style.transform = 'scale(1.1)';
+    setTimeout(() => { counter.style.transform = 'scale(1)'; }, 200);
+}
+
+// ===== Resizing Logic =====
+function setupResizer() {
+    const resizer = document.getElementById('resizer');
+    const leftPanel = document.getElementById('left-panel');
+    const rightPanel = document.getElementById('right-panel');
+    const trainerLayout = document.getElementById('trainer-layout');
+
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        document.body.style.cursor = 'col-resize';
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    });
+
+    function handleMouseMove(e) {
+        if (!isResizing) return;
+
+        const containerWidth = trainerLayout.clientWidth;
+        const leftPanelWidth = e.clientX - leftPanel.getBoundingClientRect().left;
+
+        let newLeftPanelWidth = (leftPanelWidth / containerWidth) * 100;
+        let newRightPanelWidth = 100 - newLeftPanelWidth;
+
+        // Small increments to make resizing smoother
+        const snapIncrement = 0.1;
+        newLeftPanelWidth = Math.round(newLeftPanelWidth / snapIncrement) * snapIncrement;
+        newRightPanelWidth = 100 - newLeftPanelWidth;
+        
+        // Apply constraints
+        const minLeftWidth = 300; // in pixels
+        const minRightWidth = 400; // in pixels
+
+        if (leftPanelWidth < minLeftWidth || (containerWidth - leftPanelWidth) < minRightWidth) {
+            return; // Don't allow resizing below min-width
+        }
+
+        leftPanel.style.width = `${newLeftPanelWidth}%`;
+        rightPanel.style.width = `${newRightPanelWidth}%`;
+    }
+
+    function handleMouseUp() {
+        isResizing = false;
+        document.body.style.cursor = '';
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+    }
+}
+
+function resetPanelWidths() {
+    const leftPanel = document.getElementById('left-panel');
+    const rightPanel = document.getElementById('right-panel');
+    leftPanel.style.width = '60%';
+    rightPanel.style.width = '45%'; /*I'm such a rebel*/
+}
+
+
+// ===== Wire up buttons and shortcuts =====
+document.getElementById('check-answer').addEventListener('click', handleCheckAnswer);
+document.getElementById('new-question').addEventListener('click', newQuestion);
+document.getElementById('start-test').addEventListener('click', startTest);
+document.getElementById('end-test').addEventListener('click', () => {  
+    if(confirm('End test early and save results for questions answered so far?')) endTest(false);
+});
+
+document.getElementById('answer-box').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const isCorrect = handleCheckAnswer();
+
+        if (isCorrect) {
+            if (testMode) {
+                // In test mode, plain Enter is enough to advance
+                currentQuestionNum++;
+                if (currentQuestionNum >= testCount) {
+                    endTest(true);
+                } else {
+                    newQuestion();
+                }
+            } else if (e.shiftKey) {
+                // In practice mode, Shift+Enter advances
+                newQuestion();
+            }
+        }
+    }
+});
+
+document.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && e.altKey){
+      e.preventDefault();
+      startTest();
+    }
+});
+
+// ===== Initial Load =====
+document.addEventListener('DOMContentLoaded', () => {
+    populateCategoryCheckboxes();
+    // Start with the category list collapsed
+    document.getElementById('category-collapsible-content').style.display = 'none';
+    updateTimesPopup();
+    setupResizer();
+    newQuestion();
+});
+
+</script>
+
+</body>
+</html>
