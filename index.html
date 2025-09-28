@@ -298,6 +298,9 @@
             <div class="category-controls" style="margin-top: 10px;">
                 <button id="select-all">Select All</button>
                 <button id="deselect-all">Deselect All</button>
+                <!--<button id="select-easy">Select Easy</button>
+                <button id="select-medium">Select Medium</button>
+                <button id="select-hard">Select Hard</button> -->
             </div>
         </div>
     </div>
@@ -318,7 +321,7 @@
             <div class="panel-card">
                 <h3>Method and Tips & Tricks</h3>
                 <ul id="tips-list"><li>Select a category to see tips.</li></ul>
-                <button id="show-explanation">Show Solved Example</button>
+                <button id="show-explanation">Show Solved Example</button> 
                 <button id="show-tutorial" data-video-url="">Video Tutorial</button>
             </div>
         </div>
@@ -397,7 +400,7 @@ function randIntFromTwoRanges(min1, max1, min2, max2) {
 const categories = [
     {
     id: 'Linear Properties From Two Points',
-    title: 'Linear Properties from Two Points',
+    title: '(Easy) Linear Properties from Two Points',
     tips: [
         "You can write 'table' or do Ctrl+Alt+T in Desmos instead of clicking '+' then 'table'",
         "You can go to the next cell by pressing the 'Tab' key",
@@ -405,7 +408,7 @@ const categories = [
         "The slope will be 'b', the y-intercept is the y-coordinate at which the line intersects the y-axis and the x-intercept is the x-coordinate at which the line intersects the x-axis"
     ],
     explanationImage: 'https://i.ibb.co/hxVms1q2/Linear-Properties-from-Two-Points-Example.png',
-    tutorialLink: '',
+    tutorialLink: 'https://youtu.be/2ZhWPeH3kfQ?si=UEWB5sEWq6o_nhTn',
     questionGenerator: function() {
         let x1, y1, x2, y2, m, b;
 
@@ -464,10 +467,131 @@ const categories = [
         }
     },
 
+    {
+    id: 'Trignometric Identity Evaluation',
+    title: '(Easy) Trigonometric Identity Evaluation',
+    tips: [
+    "Don't forget to set it to degrees through the wrench icon!",
+    "the regression we run here is sin(a)~value and sin(b)~value",
+    "After that, all you gotta do is plug in the value or do y₁ = value of y (you can't use y by itself in the equation! x and y cannot be used as regression terms)"
+    ],
+    explanationImage: 'https://i.ibb.co/mCV5z8c7/Trignometric-Identity-Evaluation-Example.png',
+    tutorialLink: '',
+    questionGenerator: function() {
+        // Function to generate a rational value between 0 and 1, rounded to 2 decimal places.
+        const generateRationalValue = () => {
+            let numerator;
+            let denominator;
+            do {
+                numerator = Math.floor(Math.random() * 90) + 1; // 1 to 90
+                denominator = Math.floor(Math.random() * 90) + 1; // 1 to 90
+            } while (numerator >= denominator);
+            return (numerator / denominator).toFixed(2);
+        };
+
+        // Randomize the values for sin(a) and cos(b)
+        const sinA_val = parseFloat(generateRationalValue());
+        const cosB_val = parseFloat(generateRationalValue());
+        
+        // Randomize the coefficients for the two terms
+        const coeff1 = Math.floor(Math.random() * 4) + 2;
+        const coeff2 = Math.floor(Math.random() * 4) + 2;
+
+        // Randomize the value of y; trying to get a non-zero integer
+        let y_val = Math.floor(Math.random() * 31) - 15; // Random integer between -15 and 15
+        if (y_val === 0) {
+            y_val = 1; // Ensure y is not zero
+        }
+
+        // The expression to display to the user
+        const expression = `${coeff1} \\cos(90^\\circ - a) \\cos(b^\\circ) + ${coeff2} \\sin(a + y)^\\circ \\sin(90^\\circ - b)`;
+
+        // For the expression to be solvable with the given information, we need to make an assumption.
+        // We will assume that a and b are such that cos(a) and sin(b) can be determined.
+        // Using the Pythagorean identity: sin^2(x) + cos^2(x) = 1
+        // We have cos(a) = sqrt(1 - sin^2(a)) and sin(b) = sqrt(1 - cos^2(b))
+        // Since we are given sin a and cos b, and a and b are in the first quadrant (0 < b < 90),
+        // we know cos a and sin b are positive.
+        const cosA_val = Math.sqrt(1 - sinA_val * sinA_val);
+        const sinB_val = Math.sqrt(1 - cosB_val * cosB_val);
+        
+        // Now we evaluate the full expression with the given values and y
+        const term1 = coeff1 * sinA_val * cosB_val;
+        
+        // Using the angle addition formula for sin(a+y)
+        const sin_a_plus_y = sinA_val * Math.cos(y_val * Math.PI / 180) + cosA_val * Math.sin(y_val * Math.PI / 180);
+        
+        const term2 = coeff2 * sin_a_plus_y * cosB_val;
+
+        // The final answer is the sum of the two terms, rounded to 3 decimal places.
+        const answer = parseFloat((term1 + term2).toFixed(3));
+
+        const questionText = `For the expression $$${expression}$$ where $$\\sin a^\\circ = ${sinA_val.toFixed(2)}$$ $$\\cos b^\\circ = ${cosB_val.toFixed(2)}$$ what is the value of the expression (to three decimal places) when y = ${y_val}?`;
+
+        return { questionText, answer: answer };
+        }
+    },
+
+        {
+        id: 'Simple Percentage Change', /* Maybe I should arrange them by difficulty lol */
+        title: '(Easy) Simple Percentage Change',
+        tips: [
+            "Here we can learn to use regressions and the desmos % of (typed with shift+5) built-in function to solve questions like these with Desmos",
+            "Run a regression like '140% of x₁ ~ 77' when the value increases by 40%",
+            "A percentage increase is calculated as: original value × (1 + percent/100)",
+            "A percentage decrease is calculated as: original value × (1 - percent/100)"
+        ],
+        explanationImage: 'https://i.ibb.co/zhpSdvWh/Simple-Percentage-Change-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let x;
+            let percent;
+            let result;
+            let isIncrease;
+
+            // Loop until a whole number result is generated
+            while (true) {
+                // Generate a random positive integer for the original value (x)
+                x = randInt(1, 100);
+
+                // Decide randomly if it's an increase or decrease
+                isIncrease = Math.random() < 0.5;
+
+                // Generate a random percent change that is a multiple of 5
+                // Max percent is 95 to ensure a positive result for decrease
+                percent = randInt(1, isIncrease ? 15 : 19) * 5;
+
+                if (isIncrease) {
+                    // Calculate the result for an increase
+                    result = x * (100 + percent) / 100;
+                } else {
+                    // Calculate the result for a decrease
+                    result = x * (100 - percent) / 100;
+                }
+
+                // Check if the result is a whole number
+                if (result % 1 === 0) {
+                    break;
+                }
+            }
+            
+            let questionText;
+            if (isIncrease) {
+                questionText = `The result of increasing the quantity x by ${percent}% is ${result}. What is the value of x?`;
+            } else {
+                questionText = `The result of decreasing the quantity x by ${percent}% is ${result}. What is the value of x?`;
+            }
+
+            const answer = x;
+
+            return { questionText, answer };
+        }
+    },
+
 
     {
         id: 'Two points Non-linear',
-        title: 'Two Points Non-Linear',
+        title: '(Medium) Two Points Non-Linear',
         tips: [
             "A linear function f(x) has the form f(x) = mx + b. The y-intercept is b.",
             "Plot the points, then run a regression, replacing f(x) with mx+b",
@@ -598,12 +722,12 @@ const categories = [
             const answer = sumOfSolutions;
             return { questionText, answer };
         }
-    }, Commenting this out because it doesn't require a regression and is pretty elementary imo ._.*/
+    }, Commenting this out because it doesn't really require a regression or help with another category ._.*/
     
 
         {
         id: 'Circle Regression',
-        title: 'Circle Regression',
+        title: '(Medium) Circle Regression',
         tips: [
             "The standard form for the equation of a circle is (x+h)² + (y+k)²=r² where (h,k) is the centre",
             "Therefore, you can plot the circle just using the centre point given",
@@ -648,73 +772,8 @@ const categories = [
     },
 
     {
-    id: 'Trignometric Identity Evaluation',
-    title: 'Trigonometric Identity Evaluation',
-    tips: [
-    "Don't forget to set it to degrees through the wrench icon!",
-    "the regression we run here is sin(a)~value and sin(b)~value",
-    "After that, all you gotta do is plug in the value or do y₁ = value of y (you can't use y by itself in the equation! x and y cannot be used as regression terms)"
-    ],
-    explanationImage: 'https://i.ibb.co/mCV5z8c7/Trignometric-Identity-Evaluation-Example.png',
-    tutorialLink: '',
-    questionGenerator: function() {
-        // Function to generate a rational value between 0 and 1, rounded to 2 decimal places.
-        const generateRationalValue = () => {
-            let numerator;
-            let denominator;
-            do {
-                numerator = Math.floor(Math.random() * 90) + 1; // 1 to 90
-                denominator = Math.floor(Math.random() * 90) + 1; // 1 to 90
-            } while (numerator >= denominator);
-            return (numerator / denominator).toFixed(2);
-        };
-
-        // Randomize the values for sin(a) and cos(b)
-        const sinA_val = parseFloat(generateRationalValue());
-        const cosB_val = parseFloat(generateRationalValue());
-        
-        // Randomize the coefficients for the two terms
-        const coeff1 = Math.floor(Math.random() * 4) + 2;
-        const coeff2 = Math.floor(Math.random() * 4) + 2;
-
-        // Randomize the value of y; trying to get a non-zero integer
-        let y_val = Math.floor(Math.random() * 31) - 15; // Random integer between -15 and 15
-        if (y_val === 0) {
-            y_val = 1; // Ensure y is not zero
-        }
-
-        // The expression to display to the user
-        const expression = `${coeff1} \\cos(90^\\circ - a) \\cos(b^\\circ) + ${coeff2} \\sin(a + y)^\\circ \\sin(90^\\circ - b)`;
-
-        // For the expression to be solvable with the given information, we need to make an assumption.
-        // We will assume that a and b are such that cos(a) and sin(b) can be determined.
-        // Using the Pythagorean identity: sin^2(x) + cos^2(x) = 1
-        // We have cos(a) = sqrt(1 - sin^2(a)) and sin(b) = sqrt(1 - cos^2(b))
-        // Since we are given sin a and cos b, and a and b are in the first quadrant (0 < b < 90),
-        // we know cos a and sin b are positive.
-        const cosA_val = Math.sqrt(1 - sinA_val * sinA_val);
-        const sinB_val = Math.sqrt(1 - cosB_val * cosB_val);
-        
-        // Now we evaluate the full expression with the given values and y
-        const term1 = coeff1 * sinA_val * cosB_val;
-        
-        // Using the angle addition formula for sin(a+y)
-        const sin_a_plus_y = sinA_val * Math.cos(y_val * Math.PI / 180) + cosA_val * Math.sin(y_val * Math.PI / 180);
-        
-        const term2 = coeff2 * sin_a_plus_y * cosB_val;
-
-        // The final answer is the sum of the two terms, rounded to 3 decimal places.
-        const answer = parseFloat((term1 + term2).toFixed(3));
-
-        const questionText = `For the expression $$${expression}$$ where $$\\sin a^\\circ = ${sinA_val.toFixed(2)}$$ $$\\cos b^\\circ = ${cosB_val.toFixed(2)}$$ what is the value of the expression (to three decimal places) when y = ${y_val}?`;
-
-        return { questionText, answer: answer };
-        }
-    },
-
-    {
     id: 'Equivalent Expression Constants',
-    title: 'Equivalent Expression Constants',
+    title: '(Medium) Equivalent Expression Constants',
     tips: [
         "Here, we can plug the equation given into desmos with 'x₁' instead of 'x' and '~' instead of '='",
         "However, this equation must be true for all values of x₁. Therefore, enter x₁ = [1...10] or something to that effect. After that, all we need to do is a+b+c"
@@ -776,7 +835,7 @@ const categories = [
 
     { /* We're producing exponential coefficients of 1 but eh */ 
     id: 'Exponential Coefficients',
-    title: 'Exponential Coefficients',
+    title: '(Medium) Exponential Coefficients',
     tips: [
     "In the SAT, they usually ask you which form displays c as a coefficient. Remember that, in some questions, the coefficient of the exponent could count!.",
     "What we can do here is plug in one of the forms (they're all equivalent)",
@@ -876,10 +935,237 @@ const categories = [
         }
     },
 
+        {
+        id: "Complex Percentage Relationships (Hey, crazy that you're actually reading this lol)",
+        title: '(Medium) Complex Percentage Relationships',
+        tips: [
+            "Here, we can use the same % of (typed with shift+5) built-in function that we did for Simple Percentage Change, but can we also use a slightly more complicated regression:",
+            "To introduce this, [a,a]~[b+c,bc] would mean that we're telling Desmos to find values for a=b+c AND a=bc. If we say a=4, Desmos will say b=2 and c=2",
+            "Using that kind of regression, we can run a = x₁% of b, a = x₂% of c, and c = (p/100)% of b where x₁ x₂ and the percentages given!",
+            "This kind of regression is shown in the solved example below",
+        ],
+        explanationImage: 'https://i.ibb.co/C30LbzJq/Complex-Percentage-Relationships-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let percent_ab, percent_ac;
+            let p;
+
+            // Loop until a question with a whole number answer for 'p' is generated
+            while (true) {
+                // Generate two random percentages
+                // A wider range helps create more unique problems
+                percent_ab = randInt(50, 500); 
+                percent_ac = randInt(50, 500);
+
+                // Calculate the value of p using the relationship: p = (percent_ab / percent_ac) * 100
+                p = (percent_ab / percent_ac) * 100;
+
+                // Check if p is a whole number
+                if (p % 1 === 0) {
+                    break;
+                }
+            }
+            
+            const questionText = `The positive number a is ${percent_ab}% of the number b, and a is ${percent_ac}% of the number c. If c is p% of b, what is the exact value of p?`;
+
+            const answer = p;
+
+            return { questionText, answer };
+        }
+    },
 
         {
+        id: 'Quadratic System of Equations',
+        title: '(Medium) Quadratic System of Equations',
+        tips: [
+            "This is another example where we can use the [a,a]~[b+c,bc] form of regression",
+            "We can regress both expressions to the values they are made equal to, and then plot the first expression given",
+            "After that, find the less positive or more positive value by plotting and checking x²+bx+c=0"
+        ],
+        explanationImage: 'https://i.ibb.co/VcTPtfH7/Quadratic-System-of-Equations-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let x1, x2;
+            
+            // Loop until two distinct integer roots are generated
+            while (true) {
+                x1 = randInt(-10, 10);
+                x2 = randInt(-10, 10);
+                if (x1 !== x2) {
+                    break;
+                }
+            }
+
+            // Calculate integer coefficients b and c from the roots
+            const b = -(x1 + x2);
+            const c = x1 * x2;
+            
+            // Calculate the two numerators from the quadratic formula for the equation x^2+bx+c=0
+            const discriminant = b * b - 4 * c;
+            const numerator1 = -b + Math.sqrt(discriminant);
+            const numerator2 = -b - Math.sqrt(discriminant);
+
+            // Randomly decide whether to ask for the smaller or larger value
+            const askSmaller = Math.random() < 0.5;
+            const answer = askSmaller ? Math.min(x1, x2) : Math.max(x1, x2);
+            
+            // Construct the question string with the full expression and randomized values
+            const questionText = `In the given equation $$x^2+bx+c = 0$$ b and c are constants. If: $$-b + \\sqrt{b^2 - 4c} = ${numerator1}$$ $$-b - \\sqrt{b^2 - 4c} = ${numerator2}$$ what is the ${askSmaller ? 'less positive' : 'more positive'} value of x?`;
+            
+            return { questionText, answer };
+        }
+    },
+
+        {
+        id: 'Parabola Symmetry (Vertex & Intercepts)',
+        title: '(Medium) Parabola Symmetry (Vertex & Intercepts)',
+        tips: [
+            "You don't really need a regression here, but this may be helpful practice for the Quadratic Regression Limit question category!",
+            "If the question asks for the x-intercept, what we can do is say 'd'= the distance of an x-intercept from the vertex (a parabola is symmetrical so the distance will be the same for both x-intercepts)",
+            "If the question asks for the vertex, you can simply run the midpoint function midpoint((x₁,0),(x₂,0)) to get the x coordinate of the vertex",
+            "If the question gave you the vertex x and y coordinates and one x-intercept you could actually plot the graph! You have the vertex and two x-intercepts. If you plot those on a table and run a quadratic regression you'll get the expression"
+        ],
+        explanationImage: 'https://i.ibb.co/7t6yBDJK/Parabola-Symmetry-Vertex-and-Intercepts.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let x1_intercept, x2_intercept;
+            
+            // Loop until two distinct integer intercepts are generated
+            while (true) {
+                x1_intercept = randInt(-15, 15);
+                x2_intercept = randInt(-15, 15);
+                if (x1_intercept !== x2_intercept) {
+                    break;
+                }
+            }
+
+            // The x-coordinate of the vertex is the midpoint of the intercepts
+            const vertex_x = (x1_intercept + x2_intercept) / 2;
+            const vertex_y = randInt(-10, 10); // A random y-value for the vertex, just for display
+
+            // Randomly choose what to ask for
+            const askForVertex = Math.random() < 0.5;
+
+            let questionText;
+            let answer;
+
+            if (askForVertex) {
+                // Ask for the vertex x-coordinate
+                questionText = `When the quadratic function f is graphed in the xy-plane, where y = f(x), its x-intercepts are (${x1_intercept}, 0) and (${x2_intercept}, 0). What is the x-coordinate of the vertex?`;
+                answer = vertex_x;
+            } else {
+                // Ask for the other x-intercept
+                questionText = `When the quadratic function f is graphed in the xy-plane, where y = f(x), its vertex is (${vertex_x}, ${vertex_y}). One of the x-intercepts of this graph is (${x1_intercept}, 0). What is the x-value of the other x-intercept of the graph?`;
+                answer = x2_intercept;
+            }
+            
+            return { questionText, answer };
+        }
+    },
+
+        {
+        id: 'circle-radius-non-standard',
+        title: '(Medium) Radius of Non-Standard Circle',
+        tips: [
+            "Here, we can simply choose any value for 'p' and find the radius, then find 'n'",
+            "To do this quickly with Desmos, we can plug in the equation, set a value for 'p', use the built-in distance() Desmos function and run a simple regression of np~radius to find 'n'",
+            "Remember to use radius, not diameter!"
+        ],
+        explanationImage: 'https://i.ibb.co/MDbRthrX/Radius-of-Non-Standard-Circle-Example.png',
+        tutorialLink: '',
+        questionGenerator: function() {
+            let a, h, k, n;
+
+            // Loop until a valid problem is generated
+            while (true) {
+                // Generate random integer values for the parameters
+                a = randInt(2, 8);
+                h = randInt(1, 10);
+                k = randInt(1, 10);
+                n = randInt(1, 10);
+
+                // Ensure the term for the radius squared is positive after expansion
+                // The expanded equation will be (x-hp)^2 + (y-kp)^2 = (np)^2
+                // which leads to a constant term of (n^2 - h^2 - k^2)p^2
+                // So n^2 - h^2 - k^2 must be positive
+                if (n * n > h * h + k * k) {
+                    break;
+                }
+            }
+
+            // Calculate the coefficients for the non-standard equation
+            const b_coeff = -2 * a * h;
+            const c_coeff = -2 * a * k;
+            const d_const = a * (n * n - h * h - k * k);
+            
+            // Construct the question string with the random values
+            // Add a 'p' term to the b and c coefficients to match the example format
+            const equation = `$$${a}x^2 ${b_coeff < 0 ? `- ${Math.abs(b_coeff)}` : `+ ${b_coeff}`}px + ${a}y^2 ${c_coeff < 0 ? `- ${Math.abs(c_coeff)}` : `+ ${c_coeff}`}py = ${d_const < 0 ? `- ${Math.abs(d_const)}` : d_const}p^2$$`;
+            
+            const questionText = `In the xy-plane, the graph of the given equation is a circle. The length of the radius of the circle is np, where n and p are positive constants. What is the value of n? ${equation}`;
+            
+            // The answer is the random integer n that was chosen
+            const answer = n;
+
+            return { questionText, answer };
+            }
+        },
+
+
+        {
+        id: 'Trinomial Factoring',
+        title: '(Medium) Trinomial Factoring',
+        tips: [
+            "For this question, you don't need any fancy regressions",
+            "A trinomial can be expressed in the form k(x+a)(x+b)(x+c) where a b and c are NOT coefficients of x³ x² and x",
+            "Because of this, the roots of the trinomial expression given will be possible values of 'b' multiplied by -1 (because if 5 is a root, (x-5) is a factor because x-5=0 gives x=5, and if -5 is a root, (x+5) is a factor because x+5=0 gies x=-5)"
+        ],
+        explanationImage: 'https://i.ibb.co/8tPybxt/Trinomial-Factoring-Example.png',
+        tutorialLink: '', /* My placeholder was https://youtu.be/dQw4w9WgXcQ. Very nice video of cute pupy */
+        questionGenerator: function() {
+            // We want to generate a question similar to the one in the image.
+            // The polynomial is of the form ax^3 + Bx^2 + Cx
+            // It factors into k*x*(x+b1)*(x+b2)
+            // Or a polynomial of the form ax^3 + bx^2 + cx + d
+            // It factors into k*(x+b1)*(x+b2)*(x+b3)
+            
+            // Generate two positive integer roots (for x+b terms)
+            const b1 = randInt(2, 10);
+            const b2 = randInt(2, 10);
+
+            // Generate a leading coefficient
+            const a_coeff = randInt(2, 4);
+            
+            // E x p a n d the polynomial: a_coeff * x * (x + b1) * (x + b2)
+            // = a_coeff * x * (x^2 + (b1+b2)x + b1*b2)
+            // = a_coeff * x^3 + a_coeff*(b1+b2)x^2 + a_coeff*(b1*b2)x
+            const B_coeff = a_coeff * (b1 + b2);
+            const C_coeff = a_coeff * b1 * b2;
+
+            // Determine the question type: with an x factor or without
+            const hasXFactor = Math.random() < 0.5;
+
+            if (hasXFactor) {
+                const questionText = `One of the factors of $$${a_coeff}x^3 + ${B_coeff}x^2 + ${C_coeff}x$$ is (x + b), where b is a positive constant. What is the smallest possible value of b?`;
+                const answer = Math.min(b1, b2);
+                return { questionText, answer };
+            } else {
+                // Now, generate a polynomial without a common x factor
+                const b3 = randInt(2, 10);
+                const B_coeff_noX = a_coeff * (b1 + b2 + b3);
+                const C_coeff_noX = a_coeff * (b1 * b2 + b1 * b3 + b2 * b3);
+                const D_coeff_noX = a_coeff * b1 * b2 * b3;
+
+                const questionText = `One of the factors of $$${a_coeff}x^3 + ${B_coeff_noX}x^2 + ${C_coeff_noX}x + ${D_coeff_noX}$$ is (x + b), where b is a positive constant. What is the smallest possible value of b?`;
+                const answer = Math.min(b1, b2, b3);
+                return { questionText, answer };
+            }
+        }
+    },
+
+            {
         id: 'Factoring a Quartic Function',
-        title: 'Factoring a Quartic Function',
+        title: '(Hard) Factoring a Quartic Function',
         tips: [
             "The key here is that all a, b, c and d must all be integers",
             "We can find k by finding the gcf of the three coefficients given (use the Desmos gcf (or gcd, same thing) built-in function), then run a regression and try values until one makes all the values integers. Remember that it must be true for all values of 'x', so do something to the effect of x₁=[1...10] (x₁ could be any value, 1-10 is chosen arbitrarily)",
@@ -956,104 +1242,9 @@ const categories = [
         }
     },
 
-        {
-        id: 'Simple Percentage Change', /* Maybe I should arrange them by difficulty lol */
-        title: 'Simple Percentage Change',
-        tips: [
-            "Here we can learn to use regressions and the desmos % of (typed with shift+5) built-in function to solve questions like these with Desmos",
-            "Run a regression like '140% of x₁ ~ 77' when the value increases by 40%",
-            "A percentage increase is calculated as: original value × (1 + percent/100)",
-            "A percentage decrease is calculated as: original value × (1 - percent/100)"
-        ],
-        explanationImage: 'https://i.ibb.co/zhpSdvWh/Simple-Percentage-Change-Example.png',
-        tutorialLink: '',
-        questionGenerator: function() {
-            let x;
-            let percent;
-            let result;
-            let isIncrease;
-
-            // Loop until a whole number result is generated
-            while (true) {
-                // Generate a random positive integer for the original value (x)
-                x = randInt(1, 100);
-
-                // Decide randomly if it's an increase or decrease
-                isIncrease = Math.random() < 0.5;
-
-                // Generate a random percent change that is a multiple of 5
-                // Max percent is 95 to ensure a positive result for decrease
-                percent = randInt(1, isIncrease ? 15 : 19) * 5;
-
-                if (isIncrease) {
-                    // Calculate the result for an increase
-                    result = x * (100 + percent) / 100;
-                } else {
-                    // Calculate the result for a decrease
-                    result = x * (100 - percent) / 100;
-                }
-
-                // Check if the result is a whole number
-                if (result % 1 === 0) {
-                    break;
-                }
-            }
-            
-            let questionText;
-            if (isIncrease) {
-                questionText = `The result of increasing the quantity x by ${percent}% is ${result}. What is the value of x?`;
-            } else {
-                questionText = `The result of decreasing the quantity x by ${percent}% is ${result}. What is the value of x?`;
-            }
-
-            const answer = x;
-
-            return { questionText, answer };
-        }
-    },
-
-        {
-        id: "Complex Percentage Relationships (it's complicated, ok?)",
-        title: 'Complex Percentage Relationships',
-        tips: [
-            "Here, we can use the same % of (typed with shift+5) built-in function that we did for Simple Percentage Change, but can we also use a slightly more complicated regression:",
-            "To introduce this, [a,a]~[b+c,bc] would mean that we're telling Desmos to find values for a=b+c AND a=bc. If we say a=4, Desmos will say b=2 and c=2",
-            "Using that kind of regression, we can run one for a = x₁% of b, a = x₂% of c, and c = (p/100)% of b where x₁ x₂ and the percentages given!",
-            "This kind of regression is shown in the solved example below",
-        ],
-        explanationImage: 'https://i.ibb.co/C30LbzJq/Complex-Percentage-Relationships-Example.png',
-        tutorialLink: '',
-        questionGenerator: function() {
-            let percent_ab, percent_ac;
-            let p;
-
-            // Loop until a question with a whole number answer for 'p' is generated
-            while (true) {
-                // Generate two random percentages
-                // A wider range helps create more unique problems
-                percent_ab = randInt(50, 500); 
-                percent_ac = randInt(50, 500);
-
-                // Calculate the value of p using the relationship: p = (percent_ab / percent_ac) * 100
-                p = (percent_ab / percent_ac) * 100;
-
-                // Check if p is a whole number
-                if (p % 1 === 0) {
-                    break;
-                }
-            }
-            
-            const questionText = `The positive number a is ${percent_ab}% of the number b, and a is ${percent_ac}% of the number c. If c is p% of b, what is the exact value of p?`;
-
-            const answer = p;
-
-            return { questionText, answer };
-        }
-    },
-
-        {
+            {
         id: 'Quadratic and Linear Intersection',
-        title: 'Quadratic and Linear Intersection',
+        title: '(Hard) Quadratic and Linear Intersection',
         tips: [
             "Here, we can use a regression and the -b/2a form of the vertex to find the answer 'a'",
             "Since the system of equations has exactly ONE solution, the vertex of the quadratic is on the horizontal line signified by y=(value)",
@@ -1097,98 +1288,9 @@ const categories = [
             }
         },
 
-        {
-        id: 'Quadratic System of Equations',
-        title: 'Quadratic System of Equations',
-        tips: [
-            "This is another example where we can use the [a,a]~[b+c,bc] form of regression",
-            "We can regress both expressions to the values they are made equal to, and then plot the first expression given",
-            "After that, find the less positive or more positive value by plotting and checking x²+bx+c=0"
-        ],
-        explanationImage: 'https://i.ibb.co/VcTPtfH7/Quadratic-System-of-Equations-Example.png',
-        tutorialLink: '',
-        questionGenerator: function() {
-            let x1, x2;
-            
-            // Loop until two distinct integer roots are generated
-            while (true) {
-                x1 = randInt(-10, 10);
-                x2 = randInt(-10, 10);
-                if (x1 !== x2) {
-                    break;
-                }
-            }
-
-            // Calculate integer coefficients b and c from the roots
-            const b = -(x1 + x2);
-            const c = x1 * x2;
-            
-            // Calculate the two numerators from the quadratic formula for the equation x^2+bx+c=0
-            const discriminant = b * b - 4 * c;
-            const numerator1 = -b + Math.sqrt(discriminant);
-            const numerator2 = -b - Math.sqrt(discriminant);
-
-            // Randomly decide whether to ask for the smaller or larger value
-            const askSmaller = Math.random() < 0.5;
-            const answer = askSmaller ? Math.min(x1, x2) : Math.max(x1, x2);
-            
-            // Construct the question string with the full expression and randomized values
-            const questionText = `In the given equation $$x^2+bx+c = 0$$ b and c are constants. If: $$-b + \\sqrt{b^2 - 4c} = ${numerator1}$$ $$-b - \\sqrt{b^2 - 4c} = ${numerator2}$$ what is the ${askSmaller ? 'less positive' : 'more positive'} value of x?`;
-            
-            return { questionText, answer };
-        }
-    },
-
-        {
-        id: 'Parabola Symmetry (Vertex & Intercepts)',
-        title: 'Parabola Symmetry (Vertex & Intercepts)',
-        tips: [
-            "You don't really need a regression here, but this may be helpful practice for the Quadratic Regression Limit question category!",
-            "If the question asks for the x-intercept, what we can do is say 'd'= the distance of an x-intercept from the vertex (a parabola is symmetrical so the distance will be the same for both x-intercepts)",
-            "If the question asks for the vertex, you can simply run the midpoint function midpoint((x₁,0),(x₂,0)) to get the x coordinate of the vertex",
-            "If the question gave you the vertex x and y coordinates and one x-intercept you could actually plot the graph! You have the vertex and two x-intercepts. If you plot those on a table and run a quadratic regression you'll get the expression"
-        ],
-        explanationImage: 'https://i.ibb.co/7t6yBDJK/Parabola-Symmetry-Vertex-and-Intercepts.png',
-        tutorialLink: '',
-        questionGenerator: function() {
-            let x1_intercept, x2_intercept;
-            
-            // Loop until two distinct integer intercepts are generated
-            while (true) {
-                x1_intercept = randInt(-15, 15);
-                x2_intercept = randInt(-15, 15);
-                if (x1_intercept !== x2_intercept) {
-                    break;
-                }
-            }
-
-            // The x-coordinate of the vertex is the midpoint of the intercepts
-            const vertex_x = (x1_intercept + x2_intercept) / 2;
-            const vertex_y = randInt(-10, 10); // A random y-value for the vertex, just for display
-
-            // Randomly choose what to ask for
-            const askForVertex = Math.random() < 0.5;
-
-            let questionText;
-            let answer;
-
-            if (askForVertex) {
-                // Ask for the vertex x-coordinate
-                questionText = `When the quadratic function f is graphed in the xy-plane, where y = f(x), its x-intercepts are (${x1_intercept}, 0) and (${x2_intercept}, 0). What is the x-coordinate of the vertex?`;
-                answer = vertex_x;
-            } else {
-                // Ask for the other x-intercept
-                questionText = `When the quadratic function f is graphed in the xy-plane, where y = f(x), its vertex is (${vertex_x}, ${vertex_y}). One of the x-intercepts of this graph is (${x1_intercept}, 0). What is the x-value of the other x-intercept of the graph?`;
-                answer = x2_intercept;
-            }
-            
-            return { questionText, answer };
-        }
-    },
-
     {
     id: 'Quadratic Regression Limit',
-    title: 'Quadratic Regression Limit',
+    title: '(Hard) Quadratic Regression Limit',
     tips: [
     "We are given one point on the parabola: the vertex. Two other points are the x-intercepts",
     "Like in the Parabola Symmetry (Vertex & Intercepts) quesstion category, the x-intercepts' x-values are the vertex's + 'd', the distance of an x-intercept from the vertex",
@@ -1222,106 +1324,6 @@ const categories = [
         return { questionText, answer: parseFloat(answer.toFixed(3)) };
         }
     },
-
-        {
-        id: 'circle-radius-non-standard',
-        title: 'Radius of Non-Standard Circle',
-        tips: [
-            "Here, we can simply choose any value for 'p' and find the radius, then find 'n'",
-            "To do this quickly with Desmos, we can plug in the equation, set a value for 'p', use the built-in distance() Desmos function and run a simple regression of np~radius to find 'n'",
-            "Remember to use radius, not diameter!"
-        ],
-        explanationImage: 'https://i.ibb.co/MDbRthrX/Radius-of-Non-Standard-Circle-Example.png',
-        tutorialLink: '',
-        questionGenerator: function() {
-            let a, h, k, n;
-
-            // Loop until a valid problem is generated
-            while (true) {
-                // Generate random integer values for the parameters
-                a = randInt(2, 8);
-                h = randInt(1, 10);
-                k = randInt(1, 10);
-                n = randInt(1, 10);
-
-                // Ensure the term for the radius squared is positive after expansion
-                // The expanded equation will be (x-hp)^2 + (y-kp)^2 = (np)^2
-                // which leads to a constant term of (n^2 - h^2 - k^2)p^2
-                // So n^2 - h^2 - k^2 must be positive
-                if (n * n > h * h + k * k) {
-                    break;
-                }
-            }
-
-            // Calculate the coefficients for the non-standard equation
-            const b_coeff = -2 * a * h;
-            const c_coeff = -2 * a * k;
-            const d_const = a * (n * n - h * h - k * k);
-            
-            // Construct the question string with the random values
-            // Add a 'p' term to the b and c coefficients to match the example format
-            const equation = `$$${a}x^2 ${b_coeff < 0 ? `- ${Math.abs(b_coeff)}` : `+ ${b_coeff}`}px + ${a}y^2 ${c_coeff < 0 ? `- ${Math.abs(c_coeff)}` : `+ ${c_coeff}`}py = ${d_const < 0 ? `- ${Math.abs(d_const)}` : d_const}p^2$$`;
-            
-            const questionText = `In the xy-plane, the graph of the given equation is a circle. The length of the radius of the circle is np, where n and p are positive constants. What is the value of n? ${equation}`;
-            
-            // The answer is the random integer n that was chosen
-            const answer = n;
-
-            return { questionText, answer };
-            }
-        },
-
-
-        {
-        id: 'trinomial-factoring',
-        title: 'Trinomial Factoring',
-        tips: [
-            "For this question, you don't need any fancy regressions",
-            "A trinomial can be expressed in the form k(x+a)(x+b)(x+c) where a b and c are NOT coefficients of x³ x² and x",
-            "Because of this, the roots of the trinomial expression given will be possible values of 'b' multiplied by -1 (because if 5 is a root, (x-5) is a factor because x-5=0 gives x=5, and if -5 is a root, (x+5) is a factor because x+5=0 gies x=-5)"
-        ],
-        explanationImage: 'https://i.ibb.co/8tPybxt/Trinomial-Factoring-Example.png',
-        tutorialLink: '', /* My placeholder was https://youtu.be/dQw4w9WgXcQ. Very nice video of cute pupy */
-        questionGenerator: function() {
-            // We want to generate a question similar to the one in the image.
-            // The polynomial is of the form ax^3 + Bx^2 + Cx
-            // It factors into k*x*(x+b1)*(x+b2)
-            // Or a polynomial of the form ax^3 + bx^2 + cx + d
-            // It factors into k*(x+b1)*(x+b2)*(x+b3)
-            
-            // Generate two positive integer roots (for x+b terms)
-            const b1 = randInt(2, 10);
-            const b2 = randInt(2, 10);
-
-            // Generate a leading coefficient
-            const a_coeff = randInt(2, 4);
-            
-            // E x p a n d the polynomial: a_coeff * x * (x + b1) * (x + b2)
-            // = a_coeff * x * (x^2 + (b1+b2)x + b1*b2)
-            // = a_coeff * x^3 + a_coeff*(b1+b2)x^2 + a_coeff*(b1*b2)x
-            const B_coeff = a_coeff * (b1 + b2);
-            const C_coeff = a_coeff * b1 * b2;
-
-            // Determine the question type: with an x factor or without
-            const hasXFactor = Math.random() < 0.5;
-
-            if (hasXFactor) {
-                const questionText = `One of the factors of $$${a_coeff}x^3 + ${B_coeff}x^2 + ${C_coeff}x$$ is (x + b), where b is a positive constant. What is the smallest possible value of b?`;
-                const answer = Math.min(b1, b2);
-                return { questionText, answer };
-            } else {
-                // Now, generate a polynomial without a common x factor
-                const b3 = randInt(2, 10);
-                const B_coeff_noX = a_coeff * (b1 + b2 + b3);
-                const C_coeff_noX = a_coeff * (b1 * b2 + b1 * b3 + b2 * b3);
-                const D_coeff_noX = a_coeff * b1 * b2 * b3;
-
-                const questionText = `One of the factors of $$${a_coeff}x^3 + ${B_coeff_noX}x^2 + ${C_coeff_noX}x + ${D_coeff_noX}$$ is (x + b), where b is a positive constant. What is the smallest possible value of b?`;
-                const answer = Math.min(b1, b2, b3);
-                return { questionText, answer };
-            }
-        }
-    }
 ]; // FIN!!!
 
 
@@ -1488,6 +1490,7 @@ document.getElementById('select-all').addEventListener('click', () => {
 document.getElementById('deselect-all').addEventListener('click', () => {
     document.querySelectorAll('#category-selection input').forEach(cb => cb.checked = false);
 });
+
 
 // Explanation Modal
 const modal = document.getElementById('explanation-modal');
@@ -1702,5 +1705,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 </body>
-
 </html>
