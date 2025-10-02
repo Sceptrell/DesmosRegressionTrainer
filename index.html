@@ -322,7 +322,7 @@
                 <h3>Method and Tips & Tricks</h3>
                 <ul id="tips-list"><li>Select a category to see tips.</li></ul>
                 <button id="show-explanation">Show Solved Example</button> 
-                <button id="show-tutorial" data-video-url="">Video Tutorial</button>
+                <!--<button id="show-tutorial" data-video-url="">Video Tutorial</button>-->
             </div>
         </div>
         <div id="resizer"></div>
@@ -352,7 +352,7 @@
     <p>1. Select one or more categories to practice</p>
     <p>2. Click 'New Question' or 'Start Test'</p>
     <p>3. Solve and type your final answer into the box, then check!</p>
-    <p><strong>Shortcuts</strong>: </p>
+    <p><strong>Website Shortcuts</strong>: </p>
     <p> 'Enter': Check your answer.</p>
     <p> 'Shift+Enter': Check answer and load the next question if correct.</p>
     <p> 'Alt+Enter': Start Test.</p>
@@ -361,7 +361,15 @@
          target="_blank"
          rel="noopener noreferrer"
          title="Desmos graphing shortcuts here!">
-        Desmos graphing shortcuts
+        Desmos graphing shortcuts here!
+        </a>
+    </p>
+    <p>
+        <a href="https://github.com/Sceptrell/DesmosRegressionTrainer"
+         target="_blank"
+         rel="noopener noreferrer"
+         title="The Github Repo!">
+        The Github Repo!
         </a>
     </p>
     <p> Have any questions? Email me at desmosspeedtrainer@gmail.com!</p>
@@ -408,7 +416,7 @@ const categories = [
         "The slope will be 'b', the y-intercept is the y-coordinate at which the line intersects the y-axis and the x-intercept is the x-coordinate at which the line intersects the x-axis"
     ],
     explanationImage: 'https://i.ibb.co/hxVms1q2/Linear-Properties-from-Two-Points-Example.png',
-    tutorialLink: 'https://youtu.be/2ZhWPeH3kfQ?si=UEWB5sEWq6o_nhTn',
+    //tutorialLink: '',
     questionGenerator: function() {
         let x1, y1, x2, y2, m, b;
 
@@ -476,7 +484,7 @@ const categories = [
     "After that, all you gotta do is plug in the value or do y₁ = value of y (you can't use y by itself in the equation! x and y cannot be used as regression terms)"
     ],
     explanationImage: 'https://i.ibb.co/mCV5z8c7/Trignometric-Identity-Evaluation-Example.png',
-    tutorialLink: '',
+    //tutorialLink: '',
     questionGenerator: function() {
         // Function to generate a rational value between 0 and 1, rounded to 2 decimal places.
         const generateRationalValue = () => {
@@ -542,7 +550,7 @@ const categories = [
             "A percentage decrease is calculated as: original value × (1 - percent/100)"
         ],
         explanationImage: 'https://i.ibb.co/zhpSdvWh/Simple-Percentage-Change-Example.png',
-        tutorialLink: '',
+        //tutorialLink: '',
         questionGenerator: function() {
             let x;
             let percent;
@@ -601,7 +609,7 @@ const categories = [
             "Some more shortcuts in the link in the (?) at the top left!"
         ],
         explanationImage: 'https://i.ibb.co/fsBx5kH/Two-points-Non-Linear-Example.png',
-        tutorialLink: '',
+        //tutorialLink: '',
         questionGenerator: function() {
             let m, b, x1, x2, k1, k2, g_x1, g_x2;
             let g_x1_num, g_x2_num;
@@ -737,7 +745,7 @@ const categories = [
             "You can go to the next cell by pressing the 'Tab' key"
         ],
         explanationImage: 'https://i.ibb.co/ymSb2Zrk/Circle-Regression-Example.png',
-        tutorialLink: '',
+        //tutorialLink: '',
         questionGenerator: function() {
             const h = randInt(-10, 10);
             const k = randInt(-10, 10);
@@ -779,7 +787,7 @@ const categories = [
         "However, this equation must be true for all values of x₁. Therefore, enter x₁ = [1...10] or something to that effect. After that, all we need to do is a+b+c"
     ],
     explanationImage: 'https://i.ibb.co/8Lv8bK8w/Equivalent-Expression-Constants.png', /* forgot to write example lol */
-    tutorialLink: '',
+    //tutorialLink: '',
     questionGenerator: function() {
         let x2_coeff, x_coeff, const_term;
         let p1, d1, e1, p2, d2, e2;
@@ -842,7 +850,7 @@ const categories = [
     "After that, run the regression 'f(a+increase)/f(a)~c' where the increase is the fraction by which 'x' increases to increase f(x) by a factor of 'c'. This will work for any value of 'a'"
     ],
     explanationImage: 'https://i.ibb.co/4Z3C3kGj/Exponential-Coefficients-Example.png',
-    tutorialLink: '',
+    //tutorialLink: '',
     questionGenerator: function() {
         const a = Math.floor(Math.random() * 50) + 10;
         
@@ -945,7 +953,7 @@ const categories = [
             "This kind of regression is shown in the solved example below",
         ],
         explanationImage: 'https://i.ibb.co/C30LbzJq/Complex-Percentage-Relationships-Example.png',
-        tutorialLink: '',
+        //tutorialLink: '',
         questionGenerator: function() {
             let percent_ab, percent_ac;
             let p;
@@ -983,7 +991,7 @@ const categories = [
             "After that, find the less positive or more positive value by plotting and checking x²+bx+c=0"
         ],
         explanationImage: 'https://i.ibb.co/VcTPtfH7/Quadratic-System-of-Equations-Example.png',
-        tutorialLink: '',
+        //tutorialLink: '',
         questionGenerator: function() {
             let x1, x2;
             
@@ -1026,7 +1034,7 @@ const categories = [
             "If the question gave you the vertex x and y coordinates and one x-intercept you could actually plot the graph! You have the vertex and two x-intercepts. If you plot those on a table and run a quadratic regression you'll get the expression"
         ],
         explanationImage: 'https://i.ibb.co/7t6yBDJK/Parabola-Symmetry-Vertex-and-Intercepts.png',
-        tutorialLink: '',
+        //tutorialLink: '',
         questionGenerator: function() {
             let x1_intercept, x2_intercept;
             
@@ -1072,7 +1080,7 @@ const categories = [
             "Remember to use radius, not diameter!"
         ],
         explanationImage: 'https://i.ibb.co/MDbRthrX/Radius-of-Non-Standard-Circle-Example.png',
-        tutorialLink: '',
+        //tutorialLink: '',
         questionGenerator: function() {
             let a, h, k, n;
 
@@ -1121,7 +1129,7 @@ const categories = [
             "The roots of the trinomial expression given will be possible values of 'b' multiplied by -1 (because if 5 is a root, (x-5) is a factor because x-5=0 gives x=5, and if -5 is a root, (x+5) is a factor because x+5=0 gies x=-5)"
         ],
         explanationImage: 'https://i.ibb.co/8tPybxt/Trinomial-Factoring-Example.png',
-        tutorialLink: '', /* My placeholder was https://youtu.be/dQw4w9WgXcQ. Very nice video of cute pupy */
+        //tutorialLink: '', /* My placeholder was https://youtu.be/dQw4w9WgXcQ. Very nice video of cute pupy */
         questionGenerator: function() {
             // We want to generate a question similar to the one in the image.
             // The polynomial is of the form ax^3 + Bx^2 + Cx
@@ -1173,7 +1181,7 @@ const categories = [
             "A shorter regression not shown in the example is [ac , ad+bc , bd]~[q/k , s/k , t/k] where 'q', 's' and 't' are the coefficients of x⁴, x² and x⁰, respectively. You will not need to set x₁=[1...10] (this type of regression is explained in 'Complex Percentage Relationships') "
         ],
         explanationImage: 'https://i.ibb.co/gMZw01Qp/Factoring-a-Quartic-Function-Example.png',
-        tutorialLink: '',
+        //tutorialLink: '',
         questionGenerator: function() {
             // Helper function to get all positive integer factors of a number
             function getIntegerFactors(num) {
@@ -1252,7 +1260,7 @@ const categories = [
             "This will give us the value of 'a'"
         ],
         explanationImage: 'https://i.ibb.co/zWXZPRjV/Quadratic-and-Linear-Intersection-Example.png',
-        tutorialLink: '',
+        //tutorialLink: '',
         questionGenerator: function() {
             let A_coeff, b_coeff, c_const, a;
 
@@ -1300,7 +1308,7 @@ const categories = [
     "This question structured specifically can actually be solved simply by doing y+1, which is kinda funny ngl"
     ],
     explanationImage: 'https://i.ibb.co/8DktjdVy/Quadratic-Regression-Limit-Example.png',
-    tutorialLink: '',
+    //tutorialLink: '',
 
     questionGenerator: function() {
         let h;
@@ -1379,7 +1387,7 @@ function newQuestion() {
     });
     
     document.getElementById('show-explanation').dataset.imageSrc = category.explanationImage;
-    document.getElementById('show-tutorial').dataset.videoUrl = category.tutorialLink;
+    //document.getElementById('show-tutorial').dataset.videoUrl = category.tutorialLink;
     resetPanelWidths(); // Reset widths for new question
 }
 
@@ -1503,7 +1511,7 @@ document.getElementById('show-explanation').addEventListener('click', () => {
         alert("Please start a question first to see an example.");
     }
 });
-document.getElementById('show-tutorial').addEventListener('click', () => {
+/*document.getElementById('show-tutorial').addEventListener('click', () => {
     // This line reads the dynamically set URL from the data-video-url attribute
     const videoUrl = document.getElementById('show-tutorial').dataset.videoUrl;
     
@@ -1512,7 +1520,7 @@ document.getElementById('show-tutorial').addEventListener('click', () => {
     } else {
         alert("I'll do this eventually I swear");
     }
-});
+});*/
 document.getElementById('close-modal').onclick = () => { modal.style.display = 'none'; };
 window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; };
 
@@ -1706,4 +1714,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
