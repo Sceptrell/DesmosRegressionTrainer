@@ -21,6 +21,7 @@
   <meta name="description" content="Master SAT math regressions with our comprehensive guide and Desmos calculator tricks. Learn step-by-step tutorials for linear, quadratic, and exponential models."/>
 
   <script src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=4435f284d2154cf48e80abbbffc842cd"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
   <style>
     /* Bluebook-inspired Base Styles */
@@ -41,6 +42,7 @@
     }
 
     body {
+      zoom: 73%;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 0;
@@ -68,6 +70,27 @@
       position: sticky;
       top: 0;
       z-index: 1000;
+    }
+
+    #trophy-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.6);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease-out;
+    user-select: none;
+    }
+    #trophy-button:hover {
+        background: rgba(255,255,255,0.15);
+        border-color: white;
+        transform: scale(1.05);
     }
 
     #top-bar h1 {
@@ -488,6 +511,61 @@
     
     #help-popup p { font-size: 0.95rem; line-height: 1.5; color: var(--bb-text-secondary); margin-bottom: 8px; }
     #help-popup h3 { color: var(--bb-header-bg); border-bottom: 1px solid var(--bb-border); padding-bottom: 12px; margin-bottom: 16px; }
+
+    .category-learned label {
+    opacity: 0.55;
+}
+
+    .learned-badge {
+        margin-left: 8px;
+        color: var(--difficulty-easy);
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        border-radius: 3px;
+        padding: 1px 4px;
+        transition: background 0.15s;
+    }
+    .learned-badge:hover {
+        background: rgba(24, 128, 56, 0.15);
+        text-decoration: line-through;
+    }
+
+    #completion-modal {
+        display: none;
+        position: fixed;
+        z-index: 1003;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+    }
+
+    #completion-modal-content {
+        background: white;
+        border-radius: 16px;
+        padding: 36px 40px;
+        max-width: 520px;
+        width: 90%;
+        text-align: left;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        position: relative;
+        animation: popupSlide 0.25s ease-out forwards;
+    }
+
+    #completion-modal-content h2 {
+        margin-bottom: 12px;
+    }
+
+    #completion-modal-content p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--bb-text-secondary);
+        margin-bottom: 10px;
+    }
+
   </style>
 </head>
 <body>
@@ -497,7 +575,10 @@
         <div id="help-button" title="Info">?</div>
         <h1>Desmos Regression Trainer</h1>
     </div>
-    <div id="correct-counter">Correct: 0</div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div id="trophy-button" title="All categories mastered! Click to view.">🏆</div>
+        <div id="correct-counter">Correct: 0</div>
+    </div>
 </div>
 
 <div id="main-container">
@@ -507,10 +588,13 @@
             <span id="category-toggle-btn">[+]</span>
         </div>
         <div id="category-collapsible-content">
-            <div class="category-controls" style="margin-bottom: 12px;">
-                <button class="secondary" id="select-all" style="padding: 6px 16px; font-size: 0.85rem;">Select All</button>
-                <button class="secondary" id="deselect-all" style="padding: 6px 16px; font-size: 0.85rem;">Deselect All</button>
-            </div>
+        
+        <div class="category-controls" style="margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <button class="secondary" id="select-all" style="padding: 6px 16px; font-size: 0.85rem;">Select All</button>
+            <button class="secondary" id="deselect-all" style="padding: 6px 16px; font-size: 0.85rem;">Deselect All</button>
+            <button class="secondary" id="select-incomplete" style="padding: 6px 16px; font-size: 0.85rem;">Select Incomplete</button>
+            <span style="font-size: 0.875rem; color: var(--bb-text-secondary);">I recommend solving categories in order! Solved categories will be marked as complete ✓</span>
+        </div>
             <div id="category-selection"></div>
         </div>
     </div>
@@ -566,26 +650,70 @@
 
 <div id="help-popup">
     <span class="close-btn" onclick="document.getElementById('help-popup').style.display='none'" style="color: #666; font-size: 24px; top: 16px; right: 20px;">&times;</span>
-    <h3 style="margin-top:0">Navigation & Help</h3>
-    <p>1. Select one or more categories to practice.</p>
+    <h3 style="margin-top:0">Info & Help</h3>
+    <!--<p>1. Select one or more categories to practice.</p>
     <p>2. Click 'Next Question' to begin.</p>
     <p>3. Solve and type your final answer into the box, then Submit.</p>
     <br>
     <p><strong style="color: var(--bb-header-bg);">Keyboard Shortcuts</strong>: </p>
     <p> <code>Enter</code> : Submit your answer.</p>
     <p> <code>Shift+Enter</code> : Submit answer and load the next question.</p>
-    <br>
+    <br>-->
+    <p>
+        Hey, this is a free, open-source site I made to help students learn to use Desmos efficiently. Enjoy!
+    </p>
+    <p>
+        I recommend solving categories in order from easy to hard. After mastering each of the categories, you will be able to solve a wide variety of SAT questions more quickly and efficiently. With regard to further SAT practice and resources, I recommend the following sites:
+    </p>
+
+    <p>
+        Khan Academy, of course, is great for developing or revising foundations: <a href="https://www.khanacademy.org/test-prep/v2-sat-math" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">
+        Khan Academy →
+        </a>
+    </p>
+
+    <p>
+        Crackd has great questions with Desmos walkthroughs, though it requires a subscription (affiliate link; no extra cost to you): <a href="https://crackd.it/rt" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">
+        Crackd →
+        </a>
+    </p>
+
+    <p>
+        For the official question bank, I recommend: <a href="https://satquestionbank.org" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">
+        satquestionbank.org →
+        </a> (as Oneprep has become more paywalled at seemingly no benefit)
+    </p>
+
+    <p>
+        Using leaked SATs is against CollegeBoard Terms & Conditions, so definitely avoid sites like bluebooky.com at all costs
+    </p>
+
     <p>
         <a href="https://www.desmos.com/graphingshortcuts" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">
         View Desmos Shortcuts →
         </a>
     </p>
     <p>
-        <a href="https://github.com/Sceptrell/DesmosRegressionTrainer" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">
+        <a href="https://github.com/DesmosRegressionTrainer/DesmosRegressionTrainer" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">
         Github Repository →
         </a>
     </p>
-    <p style="font-size: 0.8rem; margin-top: 24px; border-top: 1px solid var(--bb-border); padding-top: 12px;">Questions? Email desmosspeedtrainer@gmail.com</p>
+    <p style="font-size: 0.8rem; margin-top: 24px; border-top: 1px solid var(--bb-border); padding-top: 12px;">Questions or feedback? Email desmosspeedtrainer@gmail.com. All questions are welcome, and all feedback is appreciated!</p>
+</div>
+
+<div id="completion-modal">
+    <div id="completion-modal-content">
+        <span class="close-btn" id="close-completion-modal" style="color: #999; font-size: 24px; top: 16px; right: 20px;">&times;</span>
+        <h2>🎉 All Categories Mastered!</h2>
+        <p>Congratulations on reaching the end of the Desmos Regression Trainer 🥳 More practice is always beneficial, but you are now armed with the basic tools enabling you to solve a wide variety of SAT math questions quickly and efficiently. Good luck on your SAT!</p>
+        <p>For further practice elsewhere, here are some resources I recommend:</p>
+        <p>Khan Academy, of course, is great for developing or revising foundations: <a href="https://www.khanacademy.org/test-prep/v2-sat-math" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">Khan Academy →</a></p>
+        <p>Crackd has great questions with Desmos walkthroughs, though full access is paid: <a href="https://crackd.it/rt" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">Crackd →</a> <span style="font-size:0.85rem;">(Affiliate link; no extra cost to you)</span></p>
+        <p>For the official question bank: <a href="https://satquestionbank.org" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">satquestionbank.org →</a></p>
+        <p>Using leaked SATs is against CollegeBoard Terms & Conditions, so definitely avoid sites like bluebooky.com at all costs (:</p>
+        <p>See this list again by clicking the trophy icon in the top right (your category progress will be saved locally); happy studying!</p>
+        <p style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--bb-border); font-size: 0.85rem;">Questions or feedback? Email desmosspeedtrainer@gmail.com. All questions are welcome, and all feedback is appreciated!</p>
+    </div>
 </div>
 
 <script>
@@ -1337,95 +1465,6 @@ const categories = [
     },
 
     {
-        id: 'Factoring a Quartic Function',
-        title: '(Hard) Factoring a Quartic Function',
-        tips: [
-            "The key here is that all a, b, c and d must all be integers",
-            "We can find k by finding the gcf of the three coefficients given (use the Desmos gcf (or gcd, same thing) built-in function), then run a regression and try values until one makes all the values integers. Remember that it must be true for all values of 'x', so do something to the effect of x₁=[1...10] (x₁ could be any value, 1-10 is chosen arbitrarily)",
-            "After you've found four integer values for a, b, c and d (try integer values of a until one works), check the value of both ab and cd. This is because ab could equal cd (look at how the expression is structured. (ax²+b) can swap with (cx²+d))",
-            "A shorter regression not shown in the example is [ac , ad+bc , bd]~[q/k , s/k , t/k] where 'q', 's' and 't' are the coefficients of x⁴, x² and x⁰, respectively. You will not need to set x₁=[1...10] (this type of regression is explained in 'Complex Percentage Relationships') "
-        ],
-        explanationImage: 'https://i.imgur.com/0bUqJNt.jpeg',
-        questionGenerator: function() {
-            function getIntegerFactors(num) {
-                const factors = new Set();
-                const absNum = Math.abs(num);
-                for (let i = 1; i <= Math.sqrt(absNum); i++) {
-                    if (absNum % i === 0) {
-                        factors.add(i);
-                        factors.add(absNum / i);
-                    }
-                }
-                return Array.from(factors).sort((x, y) => x - y);
-            }
-
-            let coeff_x4, coeff_x2, coeff_const;
-            let smallest_ab;
-            let final_a //need this for the desmosSolutions
-            let isSolvable = false;
-
-            while (!isSolvable) {
-                const k = randInt(1, 3);
-                const a = randInt(1, 5);
-                const b = randInt(1, 10);
-                const c = randInt(1, 5);
-                const d = randInt(1, 10);
-
-                coeff_x4 = k * a * c;
-                coeff_x2 = k * (a * d + b * c);
-                coeff_const = k * b * d;
-
-                const possible_ab_values = new Set();
-                const possible_a_values = new Set();
-                
-                const x4_factors = getIntegerFactors(coeff_x4);
-                const const_factors = getIntegerFactors(coeff_const);
-
-                for (const ac_factor of x4_factors) {
-                    const ac_prime = coeff_x4 / ac_factor;
-
-                    for (const bd_factor of const_factors) {
-                        const bd_prime = coeff_const / bd_factor;
-
-                        if ((ac_factor * bd_prime + ac_prime * bd_factor) === coeff_x2) {
-                        possible_ab_values.add(ac_factor * bd_factor);
-                            possible_a_values.add(ac_factor);
-                            possible_a_values.add(ac_prime);
-                        }
-                    }
-                }
-                
-                if (possible_ab_values.size > 0) {
-                    smallest_ab = Math.min(...possible_ab_values);
-                    final_a = Math.min(...possible_a_values);
-
-                    isSolvable = true; 
-                }
-            }
-            
-            const questionText = `
-                The given quadratic function $$${coeff_x4}x^4 + ${coeff_x2}x^2 + ${coeff_const}$$ has factors in the form $$(k)(ax^2 + b)(cx^2 + d)$$ If a, b, c, d, and k are positive integers, what is the smallest possible value of ab?
-            `;
-
-            const answer = smallest_ab;
-
-            return { 
-                questionText, answer, desmosSolutions: [
-                    { id: 'sol1', latex: `k=\\operatorname{gcf}\\left(${coeff_x4}, ${coeff_x2}, ${coeff_const}\\right)` },
-                    { id: 'sol2', latex: `(k)(ax_1^2 + b)(cx_1^2 + d)~${coeff_x4}x_1^4+${coeff_x2}x_1^2 + ${coeff_const}`},
-                    { id: 'sol3', latex: `x_{1}=\\left[1...10\\right]`},
-                    { id: 'sol7', latex: `   `}, 
-                    { type: 'text', id: 'note1', text: `You get a by trial and error. Try integer values of a in the above cell until you see that each variable is a positive integer (Desmos may have already done this)`},
-                    { id: 'sol5', latex: `ab`},
-                    { id: 'sol6', latex: `cd`},
-                    { type: 'text', id: 'note2', text: `Check the value of both ab and cd because any possible value for ab is also a possible value for cd. (ax²+b)(cx²+d) is the same as (cx²+d)(ax²+b)` },
-                    { type: 'text', id: 'note3', text: `The smallest possible value of ab is therefore ${smallest_ab}` }
-                    ]
-            };
-        }
-    },
-
-    {
         id: 'Quadratic and Linear Intersection',
         title: '(Hard) Quadratic and Linear Intersection',
         tips: [
@@ -1515,6 +1554,102 @@ const categories = [
         };
         }
     },
+
+        {
+        id: 'Factoring a Quartic Function',
+        title: '(Hard) Factoring a Quartic Function',
+        tips: [
+            "The key here is that all a, b, c and d must all be integers",
+            "We can find k by finding the gcf of the three coefficients given (use the Desmos gcf (or gcd, same thing) built-in function), then run a regression and try values until one makes all the values integers. Remember that it must be true for all values of 'x', so do something to the effect of x₁=[1...10] (x₁ could be any value, 1-10 is chosen arbitrarily)",
+            "After you've found four integer values for a, b, c and d (try integer values of a until one works), check the value of both ab and cd. This is because ab could equal cd (look at how the expression is structured. (ax²+b) can swap with (cx²+d))",
+            "A shorter but less intuitive method not shown in the example is [ac , ad+bc , bd]~[q/k , s/k , t/k] where 'q', 's' and 't' are the coefficients of x⁴, x² and x⁰, respectively. You will not need to set x₁=[1...10] (this type of regression is explained in 'Complex Percentage Relationships') ",
+            /*"Congratulations on reaching the end of the Desmos Regression Trainer 🥳 You are now armed with the basic tools enabling you to solve a wide variety of SAT math questions quickly and efficiently. Good luck on your SAT!",
+            `I recommend the following resources for further practice:
+            <p>Khan Academy, of course, is great for developing or revising foundations: <a href="https://www.khanacademy.org/test-prep/v2-sat-math" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">Khan Academy →</a></p>
+            <p>Crackd has excellent questions with Desmos walkthroughs (full access paid): <a href="https://crackd.it/rt" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">Crackd →</a> (Affiliate link; no extra cost to you.)</p>
+            <p>For the official question bank: <a href="https://satquestionbank.org" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">satquestionbank.org →</a></p>
+            <p>Avoid sites like bluebooky.com as using leaked SATs violates CollegeBoard's Terms & Conditions.</p>
+            <p>Please do email me at desmosspeedtrainer@gmail.com with any questions, feedback, or suggestions!</p>`*/
+        ],
+        explanationImage: 'https://i.imgur.com/0bUqJNt.jpeg',
+        questionGenerator: function() {
+            function getIntegerFactors(num) {
+                const factors = new Set();
+                const absNum = Math.abs(num);
+                for (let i = 1; i <= Math.sqrt(absNum); i++) {
+                    if (absNum % i === 0) {
+                        factors.add(i);
+                        factors.add(absNum / i);
+                    }
+                }
+                return Array.from(factors).sort((x, y) => x - y);
+            }
+
+            let coeff_x4, coeff_x2, coeff_const;
+            let smallest_ab;
+            let final_a //need this for the desmosSolutions
+            let isSolvable = false;
+
+            while (!isSolvable) {
+                const k = randInt(1, 3);
+                const a = randInt(1, 5);
+                const b = randInt(1, 10);
+                const c = randInt(1, 5);
+                const d = randInt(1, 10);
+
+                coeff_x4 = k * a * c;
+                coeff_x2 = k * (a * d + b * c);
+                coeff_const = k * b * d;
+
+                const possible_ab_values = new Set();
+                const possible_a_values = new Set();
+                
+                const x4_factors = getIntegerFactors(coeff_x4);
+                const const_factors = getIntegerFactors(coeff_const);
+
+                for (const ac_factor of x4_factors) {
+                    const ac_prime = coeff_x4 / ac_factor;
+
+                    for (const bd_factor of const_factors) {
+                        const bd_prime = coeff_const / bd_factor;
+
+                        if ((ac_factor * bd_prime + ac_prime * bd_factor) === coeff_x2) {
+                        possible_ab_values.add(ac_factor * bd_factor);
+                            possible_a_values.add(ac_factor);
+                            possible_a_values.add(ac_prime);
+                        }
+                    }
+                }
+                
+                if (possible_ab_values.size > 0) {
+                    smallest_ab = Math.min(...possible_ab_values);
+                    final_a = Math.min(...possible_a_values);
+
+                    isSolvable = true; 
+                }
+            }
+            
+            const questionText = `
+                The given quadratic function $$${coeff_x4}x^4 + ${coeff_x2}x^2 + ${coeff_const}$$ has factors in the form $$(k)(ax^2 + b)(cx^2 + d)$$ If a, b, c, d, and k are positive integers, what is the smallest possible value of ab?
+            `;
+
+            const answer = smallest_ab;
+
+            return { 
+                questionText, answer, desmosSolutions: [
+                    { id: 'sol1', latex: `k=\\operatorname{gcf}\\left(${coeff_x4}, ${coeff_x2}, ${coeff_const}\\right)` },
+                    { id: 'sol2', latex: `(k)(ax_1^2 + b)(cx_1^2 + d)~${coeff_x4}x_1^4+${coeff_x2}x_1^2 + ${coeff_const}`},
+                    { id: 'sol3', latex: `x_{1}=\\left[1...10\\right]`},
+                    { id: 'sol7', latex: `   `}, 
+                    { type: 'text', id: 'note1', text: `You get a by trial and error. Try integer values of a in the above cell until you see that each variable is a positive integer (Desmos may have already done this)`},
+                    { id: 'sol5', latex: `ab`},
+                    { id: 'sol6', latex: `cd`},
+                    { type: 'text', id: 'note2', text: `Check the value of both ab and cd because any possible value for ab is also a possible value for cd. (ax²+b)(cx²+d) is the same as (cx²+d)(ax²+b)` },
+                    { type: 'text', id: 'note3', text: `The smallest possible value of ab is therefore ${smallest_ab}` }
+                    ]
+            };
+        }
+    },
 ]; 
 
 
@@ -1563,7 +1698,7 @@ function newQuestion() {
     tipsList.innerHTML = '';
     category.tips.forEach(tip => {
         const li = document.createElement('li');
-        li.textContent = tip;
+        li.innerHTML = tip;
         tipsList.appendChild(li);
     });
     
@@ -1615,6 +1750,7 @@ function handleCheckAnswer() {
         if (!questionSolved) {
             incrementCounter();
             questionSolved = true;
+            markCategoryLearned(currentQuestion.category.id);
         }
         return true;
     } else {
@@ -1693,6 +1829,11 @@ document.getElementById('select-all').addEventListener('click', () => {
 document.getElementById('deselect-all').addEventListener('click', () => {
     document.querySelectorAll('#category-selection input').forEach(cb => cb.checked = false);
 });
+document.getElementById('select-incomplete').addEventListener('click', () => {
+    document.querySelectorAll('#category-selection input').forEach(cb => {
+        cb.checked = !learnedCategories.has(cb.value);
+    });
+});
 
 
 // Explanation Modal
@@ -1707,7 +1848,13 @@ document.getElementById('show-explanation').addEventListener('click', () => {
     }
 });
 document.getElementById('close-modal').onclick = () => { modal.style.display = 'none'; };
-window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; };
+document.getElementById('close-completion-modal').onclick = () => { hideCompletionModal(); };
+document.getElementById('trophy-button').addEventListener('click', showCompletionModal);
+window.onclick = (event) => {
+    if (event.target == modal) modal.style.display = 'none';
+    if (event.target == document.getElementById('completion-modal')) hideCompletionModal();
+};
+
 
 
 document.getElementById('help-button').addEventListener('click', ()=>{ 
@@ -1716,10 +1863,121 @@ document.getElementById('help-button').addEventListener('click', ()=>{
 
 // ===== Correct Counter =====
 let correctCount = 0;
-function incrementCounter(){
+const learnedCategories = new Set();
+const STORAGE_KEY = 'drt-learned-categories';
+
+function saveLearnedToStorage() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...learnedCategories])); }
+    catch(e) {}
+}
+
+function loadLearnedFromStorage() {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            JSON.parse(stored).forEach(id => {
+                if (categories.find(c => c.id === id)) {
+                    learnedCategories.add(id);
+                    applyLearnedBadge(id);
+                }
+            });
+        }
+    } catch(e) {}
+}
+
+function showCompletionModal() {
+    document.getElementById('completion-modal').style.display = 'flex';
+    document.getElementById('trophy-button').style.display = 'flex';
+
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;pointer-events:none;';
+    document.body.appendChild(canvas);
+
+    const myConfetti = confetti.create(canvas, { resize: true });
+    const end = Date.now() + 3500;
+    const colors = ['#004D96', '#188038', '#f5c400', '#c5221f', '#ffffff'];
+
+    (function frame() {
+        myConfetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 70,
+            startVelocity: 55,
+            origin: { x: 0, y: 0.6 },
+            colors: colors,
+            ticks: 200,
+        });
+        myConfetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 70,
+            startVelocity: 55,
+            origin: { x: 1, y: 0.6 },
+            colors: colors,
+            ticks: 50,
+        });
+        if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                } else {
+                    canvas.style.transition = 'opacity 1.5s ease';
+                    canvas.style.opacity = '0';
+                    setTimeout(() => canvas.remove(), 1500);
+                }
+    })();
+}
+
+function hideCompletionModal() {
+    document.getElementById('completion-modal').style.display = 'none';
+}
+
+function applyLearnedBadge(categoryId) {
+    const checkbox = document.getElementById(`cat-${categoryId}`);
+    if (!checkbox) return;
+    const div = checkbox.closest('div');
+    div.classList.add('category-learned');
+    const label = div.querySelector('label');
+    if (label && !label.querySelector('.learned-badge')) {
+        const badge = document.createElement('span');
+        badge.className = 'learned-badge';
+        badge.textContent = '✓';
+        badge.title = 'Click to mark as incomplete';
+        badge.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            unmarkCategoryLearned(categoryId);
+        });
+        label.appendChild(badge);
+    }
+}
+
+function markCategoryLearned(categoryId) {
+    if (learnedCategories.has(categoryId)) return;
+    learnedCategories.add(categoryId);
+    applyLearnedBadge(categoryId);
+    saveLearnedToStorage();
+    if (learnedCategories.size === categories.length) {
+        setTimeout(showCompletionModal, 600);
+    }
+}
+
+function unmarkCategoryLearned(categoryId) {
+    learnedCategories.delete(categoryId);
+    const checkbox = document.getElementById(`cat-${categoryId}`);
+    if (checkbox) {
+        const div = checkbox.closest('div');
+        div.classList.remove('category-learned');
+        const badge = div.querySelector('.learned-badge');
+        if (badge) badge.remove();
+    }
+    saveLearnedToStorage();
+    if (learnedCategories.size < categories.length) {
+        document.getElementById('trophy-button').style.display = 'none';
+    }
+}
+
+function incrementCounter() {
     correctCount++;
-    const counter = document.getElementById('correct-counter');
-    counter.innerText = `Correct: ${correctCount}`;
+    document.getElementById('correct-counter').innerText = `Correct: ${correctCount}`;
 }
 
 // ===== Resizing Logic =====
@@ -1788,21 +2046,25 @@ document.getElementById('answer-box').addEventListener('keydown', function(e) {
         e.preventDefault();
         const isCorrect = handleCheckAnswer();
 
-        if (isCorrect) {
-            if (e.shiftKey) {
-                newQuestion();
+        if (e.shiftKey) {
+            newQuestion();
             }
         }
     }
-});
+);
 
 // ===== Initial Load =====
 document.addEventListener('DOMContentLoaded', () => {
     populateCategoryCheckboxes();
+    loadLearnedFromStorage();
+    if (learnedCategories.size === categories.length) {
+        document.getElementById('trophy-button').style.display = 'flex';
+    }
     document.getElementById('category-collapsible-content').style.display = 'none';
     setupResizer();
     newQuestion();
 });
+
 </script>
 
 </body>
