@@ -1,0 +1,919 @@
+// The original Desmos technique categories (moved here unchanged from index.html).
+registerCategories('Desmos Techniques', { layout: 'stacked' }, [
+    {
+    id: 'Linear Properties From Two Points',
+    title: '(Easy) Linear Properties from Two Points',
+    tips: [
+        "You can write 'table' or do Ctrl+Alt+T in Desmos instead of clicking '+' then 'table'",
+        "You can go to the next cell by pressing the 'Tab' key",
+        "Use the two points to find the slope, then use one point to find the y-intercept. The x-intercept is found by setting y=0 in the equation.",
+        "The slope will be 'b', the y-intercept is the y-coordinate at which the line intersects the y-axis and the x-intercept is the x-coordinate at which the line intersects the x-axis"
+    ],
+    explanationImage: 'https://i.imgur.com/JSYlVgo.png',
+    questionGenerator: function() {
+        let x1, y1, x2, y2, m, b;
+        while (true) {
+            m = randNonZero(-5, 5);
+            b = randNonZero(-10, 10);
+            if (b % m === 0) {
+                x1 = randNonZero(-10, 10);
+                y1 = m * x1 + b;
+                let tempX2;
+                do {
+                    tempX2 = randNonZero(-10, 10);
+                } while (tempX2 === x1 || tempX2 === -b / m); 
+                x2 = tempX2;
+                y2 = m * x2 + b;
+                break;
+            }
+        }
+        const slope = m;
+        const yIntercept = b;
+        const xIntercept = -b / m;
+
+        const questionType = randInt(0, 2);
+        let questionText, answer;
+        
+        if (questionType === 0) {
+            questionText = `A line passes through the points $$(${x1}, ${y1})$$ and $$(${x2}, ${y2})$$ What is the slope of the line?`;
+            answer = slope;
+            lookingfor = 'slope';
+        } else if (questionType === 1) {
+            questionText = `A line passes through the points $$(${x1}, ${y1})$$ and $$(${x2}, ${y2})$$ What is the y-intercept of the line?`;
+            answer = yIntercept;
+            lookingfor = 'y-intercept';
+        } else {
+            questionText = `A line passes through the points $$(${x1}, ${y1})$$ and $$(${x2}, ${y2})$$ What is the x-intercept of the line?`;
+            answer = xIntercept;
+            lookingfor = 'x-intercept';
+        }
+
+        return { 
+            questionText, 
+            answer,
+            desmosSolutions: [
+            {type: 'table', columns: [{latex: 'x_1',values: [`${x1}`,`${x2}`]},{latex: 'y_1',values: [`${y1}`,`${y2}`]}]},
+            { id: 'sol1', latex: 'y_{1}~mx_{1}+b'},
+            {type: 'text', id:'note1', text:`The ${lookingfor} is ${answer}` }
+            ],
+        };
+        }
+    },
+
+    {
+    id: 'Trignometric Identity Evaluation',
+    degreeMode: true,
+    title: '(Easy) Trigonometric Identity Evaluation',
+    tips: [
+    "Don't forget to set it to degrees through the wrench icon!",
+    "the regression we run here is sin(a)~value and sin(b)~value",
+    "After that, all you gotta do is plug in the value or do y₁ = value of y (you can't use y by itself in the equation! x and y cannot be used as regression terms)"
+    ],
+    explanationImage: 'https://i.imgur.com/d7l5mqX.png',
+    questionGenerator: function() {
+        const generateRationalValue = () => {
+            let numerator;
+            let denominator;
+            do {
+                numerator = Math.floor(Math.random() * 90) + 1; 
+                denominator = Math.floor(Math.random() * 90) + 1; 
+            } while (numerator >= denominator);
+            return (numerator / denominator).toFixed(2);
+        };
+
+        const sinA_val = parseFloat(generateRationalValue());
+        const cosB_val = parseFloat(generateRationalValue());
+        const coeff1 = Math.floor(Math.random() * 4) + 2;
+        const coeff2 = Math.floor(Math.random() * 4) + 2;
+
+        let y_val = Math.floor(Math.random() * 31) - 15; 
+        if (y_val === 0) y_val = 1;
+
+        const expression = `${coeff1} \\cos(90^\\circ - a) \\cos(b^\\circ) + ${coeff2} \\sin(a + y)^\\circ \\sin(90^\\circ - b)`;
+
+        const cosA_val = Math.sqrt(1 - sinA_val * sinA_val);
+        const sinB_val = Math.sqrt(1 - cosB_val * cosB_val);
+        
+        const term1 = coeff1 * sinA_val * cosB_val;
+        const sin_a_plus_y = sinA_val * Math.cos(y_val * Math.PI / 180) + cosA_val * Math.sin(y_val * Math.PI / 180);
+        const term2 = coeff2 * sin_a_plus_y * cosB_val;
+
+        const answer = parseFloat((term1 + term2).toFixed(3));
+        const questionText = `For the expression $$${expression}$$ where $$\\sin a^\\circ = ${sinA_val.toFixed(2)}$$ $$\\cos b^\\circ = ${cosB_val.toFixed(2)}$$ what is the value of the expression (to three decimal places) when y = ${y_val}?`;
+
+        return { 
+            questionText, 
+            answer: answer,
+            desmosSolutions: [
+                { type: 'text', id: 'note1', text: `First of all, we set the angle to degrees with the wrench icon in the top right (the program just did it automatically, but it needs to be done manually)` },
+                { id: 'sol1', latex: `\\sin a\\sim${sinA_val}`},
+                { id: 'sol2', latex: `\\cos b\\sim${cosB_val}`},
+                { id: 'sol3', latex: `y_1\\sim${y_val}`},
+                { id: 'sol4', latex: `${coeff1}\\cos\\left(90-a\\right)\\cos\\left(b\\right)+${coeff2}\\sin\\left(a+y_{1}\\right)\\sin\\left(90-b\\right)`},
+                { type: 'text', id: 'note2', text: `The answer to 3 decimal places is therefore ${answer}` }
+            ] 
+        };
+        }
+    },
+
+    {
+        id: 'Simple Percentage Change', 
+        title: '(Easy) Simple Percentage Change',
+        tips: [
+            "Here we can learn to use regressions and the desmos % of (typed with shift+5) built-in function to solve questions like these with Desmos",
+            "Run a regression like '140% of x₁ ~ 77' when the value increases by 40%",
+            "A percentage increase is calculated as: original value × (1 + percent/100)",
+            "A percentage decrease is calculated as: original value × (1 - percent/100)"
+        ],
+        explanationImage: 'https://i.imgur.com/xJncYpd.png',
+        questionGenerator: function() {
+            let x;
+            let percent;
+            let result;
+            let isIncrease;
+
+            while (true) {
+                x = randInt(1, 100);
+                isIncrease = Math.random() < 0.5;
+                percent = randInt(1, isIncrease ? 15 : 19) * 5;
+                if (isIncrease) {
+                    result = x * (100 + percent) / 100;
+                } else {
+                    result = x * (100 - percent) / 100;
+                }
+                if (result % 1 === 0) {
+                    break;
+                }
+            }
+            
+            let questionText;
+            if (isIncrease) {
+                questionText = `The result of increasing the quantity x by ${percent}% is ${result}. What is the value of x?`;
+                desmosSolutions = [
+                    { id: 'sol1', latex: `${100+percent}\\%\\operatorname{of}\\ x_{1}\\sim${result}` }
+                ];
+            } else {
+                questionText = `The result of decreasing the quantity x by ${percent}% is ${result}. What is the value of x?`;
+                desmosSolutions = [
+                    { id: 'sol2', latex: `${100 - percent}\\%\\operatorname{of}\\ x_{1}\\sim${result}` }
+                ];
+            }
+            const answer = x;
+
+            return { 
+                questionText, 
+                answer,
+                desmosSolutions
+            };
+        }
+    },
+
+    {
+        id: 'Two points Non-linear',
+        title: '(Medium) Two Points Non-Linear',
+        tips: [
+            "A linear function f(x) has the form f(x) = mx + b. The y-intercept is b.",
+            "Plot the points, then run a regression, replacing f(x) with mx+b",
+            "You can write 'table' or do Ctrl+Alt+T in Desmos instead of clicking '+' then 'table'",
+            "You can go to the next cell by pressing the 'Tab' key",         
+            "You can delete everything by clicking the gear then 'Delete All', or use the shortcut Ctrl+Shift+L",
+            "Some more shortcuts in the link in the (?) at the top left!"
+        ],
+        explanationImage: 'https://i.imgur.com/wMi0Nnf.png',
+        questionGenerator: function() {
+            let m, b, x1, x2, k1, k2, g_x1, g_x2;
+            let g_x1_num, g_x2_num;
+
+            while (true) {
+                m = randNonZero(-5, 5);
+                b = randNonZero(-10, 10);
+                x1 = randInt(-10, 10);
+                x2 = randInt(-10, 10);
+                k1 = randInt(-10, 10);
+                k2 = randNonZero(-10, 10);
+
+                while (x1 === -k2) { x1 = randInt(-10, 10); }
+                while (x2 === x1 || x2 === -k2) { x2 = randInt(-10, 10); }
+                
+                g_x1_num = m * x1 + b + k1;
+                g_x2_num = m * x2 + b + k1;
+
+                if (g_x1_num % (x1 + k2) === 0 && g_x2_num % (x2 + k2) === 0) {
+                    g_x1 = g_x1_num / (x1 + k2);
+                    g_x2 = g_x2_num / (x2 + k2);
+                    break; 
+                }
+            }
+            
+            let k1_display = "";
+            if (k1 > 0) {
+                k1_display = ` + ${k1}`;
+            } else if (k1 < 0) {
+                k1_display = ` - ${Math.abs(k1)}`;
+            }
+
+            let k2_display = "";
+            if (k2 > 0) {
+                k2_display = ` + ${k2}`;
+            } else if (k2 < 0) {
+                k2_display = ` - ${Math.abs(k2)}`;
+            }
+
+            const tableHtml = `
+            <style>
+                #question-table {
+                    border-collapse: collapse;
+                    margin: 20px auto;
+                    font-size: 1.1rem;
+                    background: #fff;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    border-radius: 6px;
+                    overflow: hidden;
+                }
+                #question-table th, #question-table td {
+                    border: 1px solid var(--bb-border);
+                    padding: 10px 20px;
+                    text-align: center;
+                }
+                #question-table th { background: #f8f9fa; font-weight: 600; color: var(--bb-header-bg); }
+            </style>
+            <p style="margin:0 0 15px 0;">Given that f(x) is a linear function and $$g(x) = \\frac{f(x) ${k1_display}}{x ${k2_display}}$$ Use the table of values given to find the y-intercept of the graph y = f(x)</p>
+            <table id="question-table">
+                <thead>
+                    <tr>
+                        <th>x</th>
+                        <th>g(x)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>$$${x1}$$</td>
+                        <td>$$${g_x1}$$</td>
+                    </tr>
+                    <tr>
+                        <td>$$${x2}$$</td>
+                        <td>$$${g_x2}$$</td>
+                    </tr>
+                </tbody>
+            </table>
+            `;
+
+            const questionText = tableHtml;
+            const answer = b;
+            return { 
+                questionText, 
+                answer,
+                desmosSolutions: [
+                {type: 'table', columns: [{latex: 'x_1',values: [`${x1}`,`${x2}`]},{latex: 'y_1',values: [`${g_x1}`,`${g_x2}`]}]},
+                { id: 'sol1', latex: `y_{1}\\sim\\frac{mx_{1}+b${k1_display}}{x_{1}${k2_display}}`},
+                {type: 'text', id:'note1', text:`The y-intercept is therefore b = ${b}` }
+                ]
+            };
+        }
+    },
+    
+    {
+        id: 'Circle Regression',
+        title: '(Medium) Circle Regression',
+        tips: [
+            "The standard form for the equation of a circle is (x+h)² + (y+k)²=r² where (h,k) is the centre",
+            "Therefore, you can plot the circle just using the centre point given",
+            "The next step is to plot at least three points that lie on a circle into a table, then run the regression using those points:",
+            "The regression is x₁²+y₁²+ax₁+by₁+c~0",
+            "You can write 'table' or do Ctrl+Alt+T in Desmos instead of clicking '+' then 'table'",
+            "You can go to the next cell by pressing the 'Tab' key"
+        ],
+        explanationImage: 'https://i.imgur.com/o5bG7U5.png',
+        questionGenerator: function() {
+            const h = randInt(-10, 10);
+            const k = randInt(-10, 10);
+            const r = randInt(1, 10);
+
+            const a = -2 * h;
+            const b = -2 * k;
+            const c = h * h + k * k - r * r;
+
+            const options = ['a', 'b', 'c'];
+            const questionType = options[Math.floor(Math.random() * options.length)];
+            let questionText = '';
+            let answer = 0;
+
+            switch(questionType) {
+                case 'a':
+                    questionText = `A circle has a center at (${h}, ${k}) and a radius of ${r}. An equation of this circle is $$x^2 + y^2 + ax + by + c = 0$$ What is the value of a?`;
+                    answer = a;
+                    desmosSolutions = [
+                        { id: 'sol1', latex: `\\left(x-${h}\\right)^{2}+\\left(y-${k}\\right)^{2}=${r}^{2}` },
+                        {type: 'table', columns: [{latex: 'x_1',values: [`${h}`,`${h+r}`,`${h}`]},{latex: 'y_1',values: [`${k+r}`,`${k}`,`${k-r}`]}]},
+                        { id: 'sol2', latex: 'x_{1}^{2}+y_{1}^{2}+ax_{1}+by_{1}+c\\sim0' },
+                        { type: 'text', id: 'note1', text: `The value of a is therefore ${a}` }
+                    ];
+                    break;
+                case 'b':
+                    questionText = `A circle has a center at (${h}, ${k}) and a radius of ${r}. An equation of this circle is $$x^2 + y^2 + ax + by + c = 0$$ What is the value of b?`;
+                    answer = b;
+                    desmosSolutions = [
+                        { id: 'sol1', latex: `\\left(x-${h}\\right)^{2}+\\left(y-${k}\\right)^{2}=${r}^{2}` },
+                        {type: 'table', columns: [{latex: 'x_1',values: [`${h}`,`${h+r}`,`${h}`]},{latex: 'y_1',values: [`${k+r}`,`${k}`,`${k-r}`]}]},
+                        { id: 'sol2', latex: 'x_{1}^{2}+y_{1}^{2}+ax_{1}+by_{1}+c\\sim0' },
+                        { type: 'text', id: 'note1', text: `The value of b is therefore ${b}` }
+                    ];
+                    break;
+                case 'c':
+                    questionText = `A circle has a center at (${h}, ${k}) and a radius of ${r} An equation of this circle is $$x^2 + y^2 + ax + by + c = 0$$ What is the value of c?`;
+                    answer = c;
+                    desmosSolutions = [
+                        { id: 'sol1', latex: `\\left(x-${h}\\right)^{2}+\\left(y-${k}\\right)^{2}=${r}^{2}` },
+                        {type: 'table', columns: [{latex: 'x_1',values: [`${h}`,`${h+r}`,`${h}`]},{latex: 'y_1',values: [`${k+r}`,`${k}`,`${k-r}`]}]},
+                        { id: 'sol2', latex: 'x_{1}^{2}+y_{1}^{2}+ax_{1}+by_{1}+c\\sim0' },
+                        { type: 'text', id: 'note1', text: `The value of c is therefore ${c}` }
+                    ];
+                    break;
+            }
+
+            return { 
+                questionText, 
+                answer,
+                desmosSolutions
+            };
+        }
+    },
+
+    {
+    id: 'Equivalent Expression Constants',
+    title: '(Medium) Equivalent Expression Constants',
+    tips: [
+        "Here, we can plug the equation given into desmos with 'x₁' instead of 'x' and '~' instead of '='",
+        "However, this equation must be true for all values of x₁. Therefore, enter x₁ = [1...10] or something to that effect. After that, all we need to do is a+b+c"
+    ],
+    explanationImage: 'https://i.imgur.com/EtJ0eA2.png',
+    questionGenerator: function() {
+        let x2_coeff, x_coeff, const_term;
+        let p1, d1, e1, p2, d2, e2;
+
+        do {
+            do { p1 = randNonZero(-5, 5); } while (Math.abs(p1) === 1);
+            do { d1 = randNonZero(-5, 5); } while (Math.abs(d1) === 1);
+            e1 = randNonZero(-10, 10); 
+
+            do { p2 = randNonZero(-5, 5); } while (Math.abs(p2) === 1);
+            do { d2 = randNonZero(-5, 5); } while (Math.abs(d2) === 1);
+            e2 = randNonZero(-10, 10); 
+
+            x2_coeff = p1 * d1 * d1 + p2 * d2 * d2;
+            x_coeff = p1 * 2 * d1 * e1 + p2 * 2 * d2 * e2;
+            const_term = p1 * e1 * e1 + p2 * e2 * e2;
+
+        } while (Math.abs(x2_coeff) <= 1 || Math.abs(x_coeff) <= 1 || Math.abs(const_term) <= 1);
+
+        const d_a = randNonZero(2, 6);
+        const d_b = randNonZero(2, 6);
+        const d_c = randNonZero(2, 6);
+
+        const a = x2_coeff * d_a;
+        const b = x_coeff * d_b;
+        const c = const_term * d_c;
+
+        const sum = a + b + c;
+        
+        const p2_display = p2 < 0 ? `- ${Math.abs(p2)}` : `+ ${p2}`;
+        const e1_display = e1 < 0 ? `- ${Math.abs(e1)}` : `+ ${e1}`;
+        const e2_display = e2 < 0 ? `- ${Math.abs(e2)}` : `+ ${e2}`;
+
+        const questionText = `If $$(\\frac{a}{${d_a}})x^2 + (\\frac{b}{${d_b}})x + \\frac{c}{${d_c}} = ${p1}(${d1}x ${e1_display})^2 ${p2_display}(${d2}x ${e2_display})^2$$ what is the sum of a+b+c?`;
+
+        return { 
+            questionText, 
+            answer: sum,
+            desmosSolutions: [
+                { id: 'sol1', latex: `(\\frac{a}{${d_a}})x_{1}^{2} + (\\frac{b}{${d_b}})x_{1} + \\frac{c}{${d_c}} ~ ${p1}(${d1}x_1 ${e1_display})^2 ${p2_display}(${d2}x_1 ${e2_display})^2` },
+                { id: 'sol2', latex: 'x_{1}=\\left[1...10\\right]' },
+                { id: 'sol3', latex: 'a+b+c' },
+                { type: 'text', id: 'note1', text: `The answer is therefore ${sum}` }
+            ] 
+        };
+        }
+    },
+
+    {
+    id: 'Exponential Coefficients',
+    title: '(Medium) Exponential Coefficients',
+    tips: [
+    "In the SAT, they usually ask you which form displays c as a coefficient. Remember that, in some questions, the coefficient of the exponent could count!.",
+    "What we can do here is plug in one of the forms (they're all equivalent)",
+    "After that, run the regression 'f(a+increase)/f(a)~c' where the increase is the fraction by which 'x' increases to increase f(x) by a factor of 'c'. This will work for any value of 'a'"
+    ],
+    explanationImage: 'https://i.imgur.com/GfHfU3N.png',
+    questionGenerator: function() {
+        const a = Math.floor(Math.random() * 50) + 10;
+        
+        let c_val, p_den;
+        let unit_base;
+        let exp_coeffs;
+
+        do {
+            const base_b_options = [8, 16, 27, 64, 81, 125, 216, 256, 343, 512, 729];
+            unit_base = base_b_options[Math.floor(Math.random() * base_b_options.length)];
+
+            const factors = [];
+            for (let i = 2; i <= Math.sqrt(unit_base); i++) {
+                if (unit_base % i === 0) {
+                    factors.push(i);
+                    if (i !== unit_base / i) {
+                        factors.push(unit_base / i);
+                    }
+                }
+            }
+            factors.sort((x, y) => x - y);
+            
+            const possible_exponents = new Set();
+            for(let base of factors) {
+                const exp = Math.round(Math.log(unit_base) / Math.log(base));
+                if (Math.pow(base, exp) === unit_base && exp > 1) {
+                    possible_exponents.add(exp);
+                }
+            }
+            possible_exponents.add(1); 
+            
+            exp_coeffs = Array.from(possible_exponents);
+            
+            const valid_pairs = exp_coeffs.filter(exp => exp > 1);
+            if (valid_pairs.length > 0) {
+                p_den = valid_pairs[Math.floor(Math.random() * valid_pairs.length)];
+                c_val = Math.pow(unit_base, 1 / p_den);
+            }
+
+        } while (!Number.isInteger(c_val) || exp_coeffs.length < 4);
+
+        const exp_coeffs_to_use = exp_coeffs.filter(exp => exp !== p_den);
+        const final_coeffs = [p_den, ...exp_coeffs_to_use.slice(0, 3)];
+
+        const forms = [];
+        const used_bases = new Set();
+        
+        forms.push(`f(x) = ${a}(${c_val})^{${p_den}x}`);
+        used_bases.add(c_val);
+
+        for (let i = 1; i < final_coeffs.length; i++) {
+            const exp_i = final_coeffs[i];
+            const base_i = Math.round(Math.pow(unit_base, 1 / exp_i));
+
+            const currentExp = exp_i === 1 ? 'x' : `${exp_i}x`;
+            
+            if (!used_bases.has(base_i)) {
+                forms.push(`f(x) = ${a}(${base_i})^{${currentExp}}`);
+                used_bases.add(base_i);
+            } else {
+                forms.push(`$$f(x) = ${a}(${unit_base})^{x}$$`);
+            }
+        }
+        
+        for (let i = forms.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [forms[i], forms[j]] = [forms[j], forms[i]];
+        }
+        
+        const questionText = `For the function f, for every increase of 1/${p_den} in the value of x, the value of f(x) increases by a factor of c. The following forms of the function f are all equivalent.
+        $$${forms[0]}$$
+        $$${forms[1]}$$
+        $$${forms[2]}$$
+        What is the value of c?`;
+        
+        const answer = c_val;
+        
+        return { 
+            questionText, 
+            answer: answer,
+            desmosSolutions: [
+                { type: 'text', id: 'note1', text: `We can use any of the forms as they are all equivalent:` },
+                { id: 'sol1', latex: `${forms[0]}` },
+                { id: 'sol2', latex: `\\frac{f\\left(a+\\frac{1}{${p_den}}\\right)}{f\\left(a\\right)}\\sim c`},
+                { type: 'text', id: 'note2', text: `The answer is therefore c = ${c_val}. This works for any value of a` }
+            ] 
+        };
+        }
+    },
+
+    {
+        id: "Complex Percentage Relationships",
+        title: '(Medium) Complex Percentage Relationships',
+        tips: [
+            "Here, we can use the same % of (typed with shift+5) built-in function that we did for Simple Percentage Change, but can we also use a slightly more complicated regression:",
+            "To introduce this, [a,a]~[b+c,bc] would mean that we're telling Desmos to find values for a=b+c AND a=bc. If we say a=4, Desmos will say b=2 and c=2",
+            "Using that kind of regression, we can run a = x₁% of b, a = x₂% of c, and c = (p/100)% of b where x₁ x₂ and the percentages given!",
+            "This kind of regression is shown in the solved example below",
+        ],
+        explanationImage: 'https://i.imgur.com/1G658Jg.png',
+        questionGenerator: function() {
+            let percent_ab, percent_ac;
+            let p;
+
+            while (true) {
+                percent_ab = randInt(50, 500); 
+                percent_ac = randInt(50, 500);
+                p = (percent_ab / percent_ac) * 100;
+                if (p % 1 === 0) {
+                    break;
+                }
+            }
+            
+            const questionText = `The positive number a is ${percent_ab}% of the number b, and a is ${percent_ac}% of the number c. If c is p% of b, what is the exact value of p?`;
+
+            const answer = p;
+
+            return { 
+                questionText, 
+                answer,
+                desmosSolutions: [
+                    { type: 'text', id: 'note1', text: `←Drag to expand!→` },
+                    { id: 'sol1', latex: `\\left[a,a,c\\right]\\sim\\left[${percent_ab}\\%\\operatorname{of}b,${percent_ac}\\%\\operatorname{of}c,p\\%\\operatorname{of}b\\right]` },
+                    { type: 'text', id: 'note2', text: 'This tells Desmos that the first term in the first set of [square brackets] equals the first term in the second set of [square brackets], and the same for the second and third terms' },
+                    { type: 'text', id: 'note3', text: `No matter what values a, b, or c have, the ratios of them must stay constant and therefore p must always be the same` }
+                ]
+            };
+        }
+    },
+
+    {
+        id: 'Quadratic System of Equations',
+        title: '(Medium) Quadratic System of Equations',
+        tips: [
+            "This is another example where we can use the [a,a]~[b+c,bc] form of regression",
+            "We can regress both expressions to the values they are made equal to, and then plot the first expression given",
+            "After that, find the less positive or more positive value by plotting and checking x²+bx+c=0"
+        ],
+        explanationImage: 'https://i.imgur.com/uGH5vyN.png',
+        questionGenerator: function() {
+            let x1, x2;
+            
+            while (true) {
+                x1 = randInt(-10, 10);
+                x2 = randInt(-10, 10);
+                const b = -(x1 + x2);
+                const c = x1 * x2;
+                if (x1 !== x2)
+                if (b !== 0)
+                if (c !== 0) {
+                    break;
+                }
+            }
+
+            const b = -(x1 + x2);
+            const c = x1 * x2;
+            
+            const discriminant = b * b - 4 * c;
+            const numerator1 = -b + Math.sqrt(discriminant);
+            const numerator2 = -b - Math.sqrt(discriminant);
+
+            const askSmaller = Math.random() < 0.5;
+            const answer = askSmaller ? Math.min(x1, x2) : Math.max(x1, x2);
+            
+            const questionText = `In the given equation $$x^2+bx+c = 0$$ b and c are constants. If: $$-b + \\sqrt{b^2 - 4c} = ${numerator1}$$ $$-b - \\sqrt{b^2 - 4c} = ${numerator2}$$ what is the ${askSmaller ? 'less positive' : 'more positive'} value of x?`;
+            
+            return { 
+                questionText, 
+                answer,
+                desmosSolutions: [
+                    { id: 'sol1', latex: `\\left[-b+\\sqrt{b^{2}-4c},-b-\\sqrt{b^{2}-4c}\\right]\\sim\\left[${numerator1}, ${numerator2}\\right]` },
+                    { id: 'sol2', latex: 'x^{2}+bx+c=0' },
+                    { type: 'text', id: 'note1', text: `Looking at the graph, the ${askSmaller ? 'less positive' : 'more positive'} value of x is therefore ${answer}` }
+                ]
+            };
+        }
+    },
+  
+    {
+        id: 'Parabola Symmetry (Vertex & Intercepts)',
+        title: '(Medium) Parabola Symmetry (Vertex & Intercepts)',
+        tips: [
+            "You don't really need a regression here, but this may be helpful practice for the Quadratic Regression Limit question category!",
+            "If the question asks for the x-intercept, what we can do is say 'd'= the distance of an x-intercept from the vertex (a parabola is symmetrical so the distance will be the same for both x-intercepts)",
+            "If the question asks for the vertex, you can simply run the midpoint function midpoint((x₁,0),(x₂,0)) to get the x coordinate of the vertex",
+            "If the question gave you the vertex x and y coordinates and one x-intercept you could actually plot the graph! You have the vertex and two x-intercepts. If you plot those on a table and run a quadratic regression you'll get the expression"
+        ],
+        explanationImage: 'https://i.imgur.com/VcPPMTG.png',
+        questionGenerator: function() {
+            let x1_intercept, x2_intercept;
+            
+            while (true) {
+                x1_intercept = randInt(-15, 15);
+                x2_intercept = randInt(-15, 15);
+                if (x1_intercept !== x2_intercept) {
+                    break;
+                }
+            }
+
+            const vertex_x = (x1_intercept + x2_intercept) / 2;
+            const vertex_y = randInt(-10, 10); 
+
+            const askForVertex = Math.random() < 0.5;
+
+            let questionText;
+            let answer;
+
+            if (askForVertex) {
+                questionText = `When the quadratic function f is graphed in the xy-plane, where y = f(x), its x-intercepts are (${x1_intercept}, 0) and (${x2_intercept}, 0). What is the x-coordinate of the vertex?`;
+                answer = vertex_x;
+                desmosSolutions = [
+                    { type: 'text', id: 'note1', text: `As parabolas are symmetrical, we can use the midpoint() function to find the vertex` },
+                    { id: 'sol1', latex: `\\operatorname{midpoint}\\left(\\left(${x1_intercept},0\\right),\\left(${x2_intercept},0\\right)\\right)` },
+                    { type: 'text', id: 'note2', text: `The x-coordinate of the vertex is therefore ${vertex_x}` }
+                ];
+            } else {
+                questionText = `When the quadratic function f is graphed in the xy-plane, where y = f(x), its vertex is (${vertex_x}, ${vertex_y}). One of the x-intercepts of this graph is (${x1_intercept}, 0). What is the x-value of the other x-intercept of the graph?`;
+                answer = x2_intercept;
+                desmosSolutions = [
+                    { type: 'text', id: 'note1', text: `As parabolas are symmetrical, the distance d of each x-intercept from the vertex is the same` },
+                    { id: 'sol1', latex: `${x1_intercept} + d\\sim${vertex_x}` },
+                    { id: 'sol2', latex: `${vertex_x} + d` },
+                    { type: 'text', id: 'note2', text: `The x-value of the other x-intercept is therefore ${x2_intercept}` }
+                ];
+            }
+            
+            return { 
+                questionText, 
+                answer,
+                desmosSolutions
+            };
+        }
+    },
+
+        {
+        id: 'circle-radius-non-standard',
+        title: '(Medium) Radius of Non-Standard Circle',
+        tips: [
+            "Here, we can simply choose any value for 'p' and find the radius, then find 'n'",
+            "To do this quickly with Desmos, we can plug in the equation, set a value for 'p', use the built-in distance() Desmos function and run a simple regression of np~radius to find 'n'",
+            "Remember to use radius, not diameter!"
+        ],
+        explanationImage: 'https://i.imgur.com/RjordBF.png',
+        questionGenerator: function() {
+            let a, h, k, n;
+            while (true) {
+                a = randInt(2, 8);
+                h = randInt(1, 10);
+                k = randInt(1, 10);
+                n = randInt(1, 10);
+                if (n * n > h * h + k * k) {
+                    break;
+                }
+            }
+
+            const b_coeff = -2 * a * h;
+            const c_coeff = -2 * a * k;
+            const d_const = a * (n * n - h * h - k * k);
+            
+            const equation = `$$${a}x^2 ${b_coeff < 0 ? `- ${Math.abs(b_coeff)}` : `+ ${b_coeff}`}px + ${a}y^2 ${c_coeff < 0 ? `- ${Math.abs(c_coeff)}` : `+ ${c_coeff}`}py = ${d_const < 0 ? `- ${Math.abs(d_const)}` : d_const}p^2$$`;
+            
+            const questionText = `In the xy-plane, the graph of the given equation is a circle. The length of the radius of the circle is np, where n and p are positive constants. What is the value of n? ${equation}`;
+            
+            const answer = n;
+
+            const p_val = 2; //
+            const center_k = -(c_coeff * p_val) / (2 * a);
+            const radius_val = n * p_val;
+            const highestPoint = center_k + radius_val;
+            const lowestPoint = center_k - radius_val;
+
+            return { questionText, answer, desmosSolutions: [                
+                { id: 'sol1', latex: `${a}x^2 ${b_coeff < 0 ? `- ${Math.abs(b_coeff)}` : `+ ${b_coeff}`}px + ${a}y^2 ${c_coeff < 0 ? `- ${Math.abs(c_coeff)}` : `+ ${c_coeff}`}py = ${d_const < 0 ? `- ${Math.abs(d_const)}` : d_const}p^2` },
+                { id: 'sol2', latex: `p=2`},
+                { type: 'text', id: 'note1', text: `Remember, 2 is completely arbitrary. However, if you change it, the circle will change and you must therefore also adjust the radius calculation in the below regression`},
+                { id: 'sol3', latex: `R_{adius} = \\frac{${highestPoint}-${lowestPoint}}{2}` },
+                { id: 'sol4', latex: `np~${radius_val}`},
+
+                { type: 'text', id: 'note2', text: `The value of n is therefore ${n}` }
+            ] };
+            }
+        },
+
+        {
+        id: 'Trinomial Factoring',
+        title: '(Medium) Trinomial Factoring',
+        tips: [
+            "For this question, you don't need any fancy regressions",
+            "Consider a trinomial expressed in the form (x+a)(x+b)(x+c) where a b and c are NOT coefficients of x³ x² and x",
+            "The roots of the trinomial expression given will be possible values of 'b' multiplied by -1 (because if 5 is a root, (x-5) is a factor because x-5=0 gives x=5, and if -5 is a root, (x+5) is a factor because x+5=0 gies x=-5)"
+        ],
+        explanationImage: 'https://i.imgur.com/e0EZJPG.png',
+        questionGenerator: function() {
+            const b1 = randInt(2, 10);
+            const b2 = randInt(2, 10);
+            const a_coeff = randInt(2, 4);
+            const B_coeff = a_coeff * (b1 + b2);
+            const C_coeff = a_coeff * b1 * b2;
+
+            const hasXFactor = Math.random() < 0.5;
+
+            if (hasXFactor) {
+                const questionText = `One of the factors of $$${a_coeff}x^3 + ${B_coeff}x^2 + ${C_coeff}x$$ is (x + b), where b is a positive constant. What is the smallest possible value of b?`;
+                const answer = Math.min(b1, b2);
+                return { questionText, answer, desmosSolutions: [
+                    { id: 'sol1', latex: `${a_coeff}x^3 + ${B_coeff}x^2 + ${C_coeff}x` }, 
+                    { id: 'sol2', latex: `A_{nswer} = (${answer},0)` },
+                    { type: 'text', id: 'note1', text: `The smallest possible value of b is therefore ${answer}` }
+                ] };
+            } else {
+                const b3 = randInt(2, 10);
+                const B_coeff_noX = a_coeff * (b1 + b2 + b3);
+                const C_coeff_noX = a_coeff * (b1 * b2 + b1 * b3 + b2 * b3);
+                const D_coeff_noX = a_coeff * b1 * b2 * b3;
+
+                const questionText = `One of the factors of $$${a_coeff}x^3 + ${B_coeff_noX}x^2 + ${C_coeff_noX}x + ${D_coeff_noX}$$ is (x + b), where b is a positive constant. What is the smallest possible value of b?`;
+                const answer = Math.min(b1, b2, b3);
+                return { questionText, answer, desmosSolutions: [
+                    { id: 'sol1', latex: `${a_coeff}x^3 + ${B_coeff_noX}x^2 + ${C_coeff_noX}x + ${D_coeff_noX}` },
+                    { id: 'sol2', latex: `A_{nswer} = (-${answer},0)` },
+                    { type: 'text', id: 'note1', text: `The smallest possible value of b is therefore ${answer}` }
+                ] };
+            }
+        }
+    },
+
+    {
+        id: 'Quadratic and Linear Intersection',
+        title: '(Hard) Quadratic and Linear Intersection',
+        tips: [
+            "Here, we can use a regression and the -b/2a form of the vertex to find the answer 'a'",
+            "Since the system of equations has exactly ONE solution, the vertex of the quadratic is on the horizontal line signified by y=(value)",
+            "Because of this, we can do f(v)=(y-value) where 'v' is the vertex (-b/2a) where 'b' is the coefficient of 'x' and 'a' is the coefficient of x²",
+            "This will give us the value of 'a'"
+        ],
+        explanationImage: 'https://i.imgur.com/R7978AR.png',
+        questionGenerator: function() {
+            let A_coeff, b_coeff, c_const, a;
+
+            while (true) {
+                A_coeff = randNonZero(2, 8);
+                b_coeff = randInt(1, 10);
+                if (b_coeff % 2 !== 0) {
+                    b_coeff += 1;
+                }
+                
+                c_const = randInt(-10, 10);
+                a = c_const + (b_coeff * b_coeff) / (4 * A_coeff);
+
+                if (Number.isInteger(a) && a > 0) {
+                    break;
+                }
+            }
+
+            const questionText = `In the given system of equations, a is a positive constant. The system has exactly one distinct real solution. What is the value of a? $$y = ${c_const}$$ $$y = ${A_coeff}x^2 + ${b_coeff}x + a$$`;
+            
+            const answer = a;
+
+            return { 
+                questionText, 
+                answer,
+                desmosSolutions: [
+                    { id: 'sol1', latex: `f(x) = ${A_coeff}x^2 + ${b_coeff}x + a` },
+                    { id: 'sol2', latex: `f\\left(-\\frac{${b_coeff}}{2(${A_coeff})}\\right)~${c_const}`},
+                    { type: 'text', id: 'note1', text: `The value of a is therefore ${answer}` },
+
+                ]
+            };
+            }
+        },
+
+    {
+    id: 'Quadratic Regression Limit',
+    title: '(Hard) Quadratic Regression Limit',
+    tips: [
+    "We are given one point on the parabola: the vertex. Two other points are the x-intercepts",
+    "Like in the Parabola Symmetry (Vertex & Intercepts) quesstion category, the x-intercepts' x-values are the vertex's + 'd', the distance of an x-intercept from the vertex",
+    "We can plot these three points in a table and run a regression with them. As we increase the value of 'd', the value of 'a+b+c' decreases",
+    "Remember, we want an integer value. If you make 'd' big enough, the value of 'a+b+c' will be shown as equal to 'c', but it's actually not and Desmos is approximating because the values of 'a' and 'b' are still nonzero and positive",
+    "Remember that you should be able to do this by hand! Desmos is simply here to help you be faster!",
+    "This question can actually be solved simply by doing y+1 (given that x≠1)",
+    "The way to solve this by hand is to expand the vertex form [a(x-h)²+k] and compare it to [ax²+bx+c] to get [a+b+c] in terms of 'a'. The reason x≠1 is because [a(x-1)²] will expand to give [a+b+c = a-2a+a-k] where 'k' is the given y-coordinate, so there will only be one possible integer value, that being 'k'",
+    "Notice that during exams, the question will usually given in a form such that you need to choose any value equal to or above the value we're finding here, as we are finding the minimum possible value and not the actual value",
+    "Keep in mind that the value of 0 in the table is not fixed. The value must only be the same for both x+d and x-d and at a y-value where a horizontal line will intersect with the parabola twice. This method can therefore be used when the parabola does not intersect with the x-axis at all."
+    ],
+    explanationImage: 'https://i.imgur.com/dCFdDiY.png',
+
+    questionGenerator: function() {
+        let h;
+        let k;
+        let answer;
+
+        do {
+            h = Math.floor(Math.random() * 11) - 5; 
+            k = Math.floor(Math.random() * 11) - 15; 
+            
+            answer = 1 + k;
+
+        } while (h === 1);
+
+        const questionText = `In the xy-plane, a parabola has vertex (${h}, ${k}) and intersects the x-axis at two points. The equation of the parabola is written in the form $$y = ax^2 + bx + c$$ where a, b, c are constants. What is the smallest possible integer value of a+b+c?`;
+        
+        return { 
+            questionText, 
+            answer: parseFloat(answer.toFixed(3)), 
+            desmosSolutions: [
+            {type: 'table', columns: [{latex: 'x_1',values: [`${h}`,`${h}+d`,`${h}-d`]},{latex: 'y_1',values: [`${k}`,`0`,`0`]}]},
+            { id: 'sol1', latex: `y_1~ax_1^2+bx_1+c` },
+            { id: 'sol2', latex: `d=10000`},
+            { id: 'sol3', latex: `a+b+c`},            
+            { type: 'text', id: 'note1', text: `The smallest possible integer value of a+b+c is therefore ${answer}` }
+            
+            ]
+        };
+        }
+    },
+
+        {
+        id: 'Factoring a Quartic Function',
+        title: '(Hard) Factoring a Quartic Function',
+        tips: [
+            "The key here is that all a, b, c and d must all be integers",
+            "We can find k by finding the gcf of the three coefficients given (use the Desmos gcf (or gcd, same thing) built-in function), then run a regression and try values until one makes all the values integers. Remember that it must be true for all values of 'x', so do something to the effect of x₁=[1...10] (x₁ could be any value, 1-10 is chosen arbitrarily)",
+            "After you've found four integer values for a, b, c and d (try integer values of a until one works), check the value of both ab and cd. This is because ab could equal cd (look at how the expression is structured. (ax²+b) can swap with (cx²+d))",
+            "A shorter but less intuitive method not shown in the example is [ac , ad+bc , bd]~[q/k , s/k , t/k] where 'q', 's' and 't' are the coefficients of x⁴, x² and x⁰, respectively. You will not need to set x₁=[1...10] (this type of regression is explained in 'Complex Percentage Relationships') ",
+            /*"Congratulations on reaching the end of the Desmos Regression Trainer 🥳 You are now armed with the basic tools enabling you to solve a wide variety of SAT math questions quickly and efficiently. Good luck on your SAT!",
+            `I recommend the following resources for further practice:
+            <p>Khan Academy, of course, is useful for developing or revising foundations: <a href="https://www.khanacademy.org/test-prep/v2-sat-math" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">Khan Academy →</a></p>
+            <p>Crackd has excellent questions with Desmos walkthroughs (full access paid): <a href="https://crackd.it/rt" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">Crackd →</a> (Affiliate link; no extra cost to you.)</p>
+            <p>For the official question bank: <a href="https://satquestionbank.org" target="_blank" rel="noopener noreferrer" style="color: var(--bb-blue); font-weight: 500; text-decoration: none;">satquestionbank.org →</a></p>
+            <p>Avoid sites like bluebooky.com as using leaked SATs violates CollegeBoard's Terms & Conditions.</p>
+            <p>Please do email me at desmosspeedtrainer@gmail.com with any questions, feedback, or suggestions!</p>`*/
+        ],
+        explanationImage: 'https://i.imgur.com/0bUqJNt.jpeg',
+        questionGenerator: function() {
+            function getIntegerFactors(num) {
+                const factors = new Set();
+                const absNum = Math.abs(num);
+                for (let i = 1; i <= Math.sqrt(absNum); i++) {
+                    if (absNum % i === 0) {
+                        factors.add(i);
+                        factors.add(absNum / i);
+                    }
+                }
+                return Array.from(factors).sort((x, y) => x - y);
+            }
+
+            let coeff_x4, coeff_x2, coeff_const;
+            let smallest_ab;
+            let final_a //need this for the desmosSolutions
+            let isSolvable = false;
+
+            while (!isSolvable) {
+                const k = randInt(1, 3);
+                const a = randInt(1, 5);
+                const b = randInt(1, 10);
+                const c = randInt(1, 5);
+                const d = randInt(1, 10);
+
+                coeff_x4 = k * a * c;
+                coeff_x2 = k * (a * d + b * c);
+                coeff_const = k * b * d;
+
+                const possible_ab_values = new Set();
+                const possible_a_values = new Set();
+                
+                const x4_factors = getIntegerFactors(coeff_x4);
+                const const_factors = getIntegerFactors(coeff_const);
+
+                for (const ac_factor of x4_factors) {
+                    const ac_prime = coeff_x4 / ac_factor;
+
+                    for (const bd_factor of const_factors) {
+                        const bd_prime = coeff_const / bd_factor;
+
+                        if ((ac_factor * bd_prime + ac_prime * bd_factor) === coeff_x2) {
+                        possible_ab_values.add(ac_factor * bd_factor);
+                            possible_a_values.add(ac_factor);
+                            possible_a_values.add(ac_prime);
+                        }
+                    }
+                }
+                
+                if (possible_ab_values.size > 0) {
+                    smallest_ab = Math.min(...possible_ab_values);
+                    final_a = Math.min(...possible_a_values);
+
+                    isSolvable = true; 
+                }
+            }
+            
+            const questionText = `
+                The given quadratic function $$${coeff_x4}x^4 + ${coeff_x2}x^2 + ${coeff_const}$$ has factors in the form $$(k)(ax^2 + b)(cx^2 + d)$$ If a, b, c, d, and k are positive integers, what is the smallest possible value of ab?
+            `;
+
+            const answer = smallest_ab;
+
+            return { 
+                questionText, answer, desmosSolutions: [
+                    { id: 'sol1', latex: `k=\\operatorname{gcf}\\left(${coeff_x4}, ${coeff_x2}, ${coeff_const}\\right)` },
+                    { id: 'sol2', latex: `(k)(ax_1^2 + b)(cx_1^2 + d)~${coeff_x4}x_1^4+${coeff_x2}x_1^2 + ${coeff_const}`},
+                    { id: 'sol3', latex: `x_{1}=\\left[1...10\\right]`},
+                    { id: 'sol7', latex: `   `}, 
+                    { type: 'text', id: 'note1', text: `You get a by trial and error. Try integer values of a in the above cell until you see that each variable is a positive integer (Desmos may have already done this)`},
+                    { id: 'sol5', latex: `ab`},
+                    { id: 'sol6', latex: `cd`},
+                    { type: 'text', id: 'note2', text: `Check the value of both ab and cd because any possible value for ab is also a possible value for cd. (ax²+b)(cx²+d) is the same as (cx²+d)(ax²+b)` },
+                    { type: 'text', id: 'note3', text: `The smallest possible value of ab is therefore ${smallest_ab}` }
+                    ]
+            };
+        }
+    },
+]);
